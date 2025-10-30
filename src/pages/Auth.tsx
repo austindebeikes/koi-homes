@@ -31,7 +31,10 @@ export default function Auth() {
         setMockUser(email, {
           first_name: firstName || 'User',
           last_name: lastName || '',
-          is_agent: isAgent,
+          role: isAgent ? 'Agent' : 'Buyer',
+          city: 'San Diego, CA',
+          bio: '',
+          phone: '',
         });
         toast({
           title: isLogin ? "Welcome back!" : "Account created!",
@@ -63,7 +66,10 @@ export default function Auth() {
             data: {
               first_name: firstName,
               last_name: lastName,
-              is_agent: isAgent,
+              role: isAgent ? 'Agent' : 'Buyer',
+              city: 'San Diego, CA',
+              bio: '',
+              phone: '',
             },
           },
         });

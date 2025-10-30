@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
+import { MessageCircle } from 'lucide-react';
 
 export default function Profile() {
   const { user, signOut } = useAuth();
@@ -29,28 +30,46 @@ export default function Profile() {
       <div className="max-w-md mx-auto">
         <div className="p-6 space-y-4">
           <div className="flex items-start gap-4">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id}`} />
+            <Avatar className="h-24 w-24">
+              <AvatarImage 
+                src={user?.user_metadata?.profile_photo || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop"} 
+                alt="Profile"
+              />
               <AvatarFallback>
                 {user?.email?.[0].toUpperCase()}
               </AvatarFallback>
             </Avatar>
 
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <h2 className="text-xl font-bold">
                 {user?.user_metadata?.first_name} {user?.user_metadata?.last_name}
               </h2>
-              <p className="text-muted-foreground">
-                {user?.user_metadata?.is_agent ? 'Real Estate Agent' : 'Home Buyer'}
+              <p className="text-muted-foreground text-sm">
+                {user?.user_metadata?.role === 'Agent' ? 'Real Estate Agent' : 'Home Buyer'}
               </p>
-              <p className="text-sm text-muted-foreground">{user?.email}</p>
+              <p className="text-sm text-muted-foreground">
+                {user?.user_metadata?.city || 'San Diego, CA'}
+              </p>
             </div>
 
-            <Button variant="default">Edit</Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate('/profile/edit')}
+            >
+              Edit
+            </Button>
           </div>
 
+          {user?.user_metadata?.role === 'Agent' && (
+            <Button className="w-full" size="lg">
+              <MessageCircle className="mr-2 h-5 w-5" />
+              Message
+            </Button>
+          )}
+
           <p className="text-sm">
-            Helping clients buy and sell homes. Passionate about real estate and connecting people with their dream properties.
+            {user?.user_metadata?.bio || 'Helping clients buy and sell homes. Passionate about real estate and connecting people with their dream properties.'}
           </p>
 
           <div className="flex gap-6 text-center">
