@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Send } from 'lucide-react';
+import { mockUsers } from '@/lib/mockData';
 
 interface Message {
   id: string;
@@ -15,6 +16,7 @@ interface Message {
 export default function Chat() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const otherUser = id ? mockUsers[id] : null;
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -54,12 +56,18 @@ export default function Chat() {
             <ArrowLeft className="h-6 w-6" />
           </button>
           <Avatar className="h-10 w-10">
-            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`} />
-            <AvatarFallback>U</AvatarFallback>
+            <AvatarImage src={otherUser?.profilePhotoUrl} />
+            <AvatarFallback>
+              {otherUser?.firstName?.[0]}{otherUser?.lastName?.[0]}
+            </AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-semibold">Michael Lee</p>
-            <p className="text-xs text-muted-foreground">Real Estate Agent</p>
+            <p className="font-semibold">
+              {otherUser?.firstName} {otherUser?.lastName}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {otherUser?.role === 'Agent' ? 'Real Estate Agent' : 'Home Buyer'}
+            </p>
           </div>
         </div>
       </header>

@@ -11,6 +11,7 @@ import Search from "./pages/Search";
 import Messages from "./pages/Messages";
 import Chat from "./pages/Chat";
 import Profile from "./pages/Profile";
+import AgentProfile from "./pages/AgentProfile";
 import EditProfile from "./pages/EditProfile";
 import Likes from "./pages/Likes";
 import NotFound from "./pages/NotFound";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/messages" element={<Messages />} />
             <Route path="/chat/:id" element={<Chat />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/agent/:id" element={<AgentProfile />} />
             <Route path="/profile/edit" element={<EditProfile />} />
             <Route path="/likes" element={<Likes />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

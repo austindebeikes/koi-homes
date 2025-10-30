@@ -6,47 +6,17 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Search as SearchIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
-interface Agent {
-  id: string;
-  name: string;
-  location: string;
-  profilePhotoUrl: string;
-  followers: number;
-}
-
-const mockAgents: Agent[] = [
-  {
-    id: '1',
-    name: 'Kelly Johnson',
-    location: 'Los Angeles, CA',
-    profilePhotoUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop',
-    followers: 1250,
-  },
-  {
-    id: '2',
-    name: 'Michael Lee',
-    location: 'Austin, TX',
-    profilePhotoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',
-    followers: 890,
-  },
-  {
-    id: '3',
-    name: 'Sarah Mitchell',
-    location: 'San Diego, CA',
-    profilePhotoUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop',
-    followers: 2100,
-  },
-];
+import { mockUsers } from '@/lib/mockData';
 
 export default function Search() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [agents] = useState<Agent[]>(mockAgents);
   const navigate = useNavigate();
 
+  const agents = Object.values(mockUsers).filter(user => user.role === 'Agent');
+
   const filteredAgents = agents.filter((agent) =>
-    agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    agent.location.toLowerCase().includes(searchQuery.toLowerCase())
+    `${agent.firstName} ${agent.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    agent.city.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -74,13 +44,13 @@ export default function Search() {
             >
               <Avatar className="h-16 w-16">
                 <AvatarImage src={agent.profilePhotoUrl} />
-                <AvatarFallback>{agent.name[0]}</AvatarFallback>
+                <AvatarFallback>{agent.firstName[0]}{agent.lastName[0]}</AvatarFallback>
               </Avatar>
 
               <div className="flex-1 min-w-0">
-                <p className="font-semibold truncate">{agent.name}</p>
+                <p className="font-semibold truncate">{agent.firstName} {agent.lastName}</p>
                 <p className="text-sm text-muted-foreground">Real Estate Agent</p>
-                <p className="text-sm text-muted-foreground">{agent.location}</p>
+                <p className="text-sm text-muted-foreground">{agent.city}</p>
                 <p className="text-sm text-muted-foreground">{agent.followers} followers</p>
               </div>
 
