@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,8 +24,18 @@ export default function Auth() {
     setLoading(true);
 
     try {
+      if (!isSupabaseConfigured) {
+        // Mock mode - just navigate to feed
+        toast({
+          title: isLogin ? "Welcome!" : "Account created!",
+          description: "Running in preview mode without backend.",
+        });
+        navigate('/feed');
+        return;
+      }
+
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase!.auth.signInWithPassword({
           email,
           password,
         });
@@ -38,7 +48,7 @@ export default function Auth() {
         });
         navigate('/feed');
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { error } = await supabase!.auth.signUp({
           email,
           password,
           options: {
