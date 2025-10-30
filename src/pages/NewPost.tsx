@@ -1,0 +1,116 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { AppHeader } from '@/components/AppHeader';
+import { BottomNav } from '@/components/BottomNav';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+
+export default function NewPost() {
+  const navigate = useNavigate();
+  const { addPost } = useAuth();
+  const { toast } = useToast();
+  const [imageUrl, setImageUrl] = useState('');
+  const [caption, setCaption] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!imageUrl.trim()) {
+      toast({
+        title: "Image URL required",
+        description: "Please provide a photo URL for your post.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    // Add post to user's posts
+    addPost({
+      imageUrl: imageUrl.trim(),
+      caption: caption.trim(),
+    });
+
+    toast({
+      title: "Post created!",
+      description: "Your new post has been added to your profile.",
+    });
+
+    // Navigate back to profile
+    navigate('/profile');
+  };
+
+  return (
+    <div className="min-h-screen bg-background pb-20">
+      <AppHeader title="Create Post" showLogo={false} />
+
+      <div className="max-w-md mx-auto p-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="imageUrl">Photo URL</Label>
+            <Input
+              id="imageUrl"
+              type="url"
+              placeholder="https://example.com/photo.jpg"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="caption">Caption</Label>
+            <Textarea
+              id="caption"
+              placeholder="Write a caption for your post..."
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              rows={4}
+            />
+          </div>
+
+          {imageUrl && (
+            <div className="space-y-2">
+              <Label>Preview</Label>
+              <img
+                src={imageUrl}
+                alt="Post preview"
+                className="w-full aspect-square object-cover rounded-lg"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </div>
+          )}
+
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1"
+              onClick={() => navigate('/profile')}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={isSubmitting}
+            >
+              Post
+            </Button>
+          </div>
+        </form>
+      </div>
+
+      <BottomNav />
+    </div>
+  );
+}

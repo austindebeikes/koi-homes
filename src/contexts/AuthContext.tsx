@@ -9,6 +9,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   isMockMode: boolean;
   setMockUser: (email: string, metadata?: any) => void;
+  addPost: (post: { imageUrl: string; caption: string }) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,7 +58,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const mockUser = {
         id: Math.random().toString(36).substring(7),
         email,
-        user_metadata: metadata || {},
+        user_metadata: {
+          posts: [],
+          ...metadata,
+        },
         app_metadata: {},
         aud: 'authenticated',
         created_at: new Date().toISOString(),
@@ -66,8 +70,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const addPost = (post: { imageUrl: string; caption: string }) => {
+    if (user?.user_metadata) {
+      const currentPosts = user.user_metadata.posts || [];
+      const updatedUser = {
+        ...user,
+        user_metadata: {
+          ...user.user_metadata,
+          posts: [post, ...currentPosts],
+        },
+      } as User;
+      setUser(updatedUser);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, signOut, isMockMode, setMockUser }}>
+    <AuthContext.Provider value={{ user, session, loading, signOut, isMockMode, setMockUser, addPost }}>
       {children}
     </AuthContext.Provider>
   );

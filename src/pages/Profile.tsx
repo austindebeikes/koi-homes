@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 export default function Profile() {
   const { user, signOut } = useAuth();
@@ -16,12 +16,7 @@ export default function Profile() {
     navigate('/auth');
   };
 
-  const mockPosts = [
-    'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400',
-    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400',
-    'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400',
-    'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=400',
-  ];
+  const userPosts = user?.user_metadata?.posts || [];
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -61,12 +56,14 @@ export default function Profile() {
             </Button>
           </div>
 
-          {user?.user_metadata?.role === 'Agent' && (
-            <Button className="w-full" size="lg">
-              <MessageCircle className="mr-2 h-5 w-5" />
-              Message
-            </Button>
-          )}
+          <Button 
+            className="w-full" 
+            size="lg"
+            onClick={() => navigate('/post/new')}
+          >
+            <Plus className="mr-2 h-5 w-5" />
+            Create Post
+          </Button>
 
           <p className="text-sm">
             {user?.user_metadata?.bio || 'Helping clients buy and sell homes. Passionate about real estate and connecting people with their dream properties.'}
@@ -101,14 +98,20 @@ export default function Profile() {
 
           <TabsContent value="posts" className="p-1">
             <div className="grid grid-cols-2 gap-1">
-              {mockPosts.map((src, idx) => (
-                <img
-                  key={idx}
-                  src={src}
-                  alt={`Post ${idx + 1}`}
-                  className="w-full aspect-square object-cover rounded"
-                />
-              ))}
+              {userPosts.length > 0 ? (
+                userPosts.map((post: any, idx: number) => (
+                  <img
+                    key={idx}
+                    src={post.imageUrl}
+                    alt={post.caption || `Post ${idx + 1}`}
+                    className="w-full aspect-square object-cover rounded"
+                  />
+                ))
+              ) : (
+                <p className="col-span-2 text-center text-muted-foreground py-8">
+                  No posts yet. Create your first post!
+                </p>
+              )}
             </div>
           </TabsContent>
 
