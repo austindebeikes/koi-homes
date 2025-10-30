@@ -9,7 +9,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 interface Post {
   id: string;
   agentName: string;
-  agentAvatar: string;
+  agentLocation: string;
+  agentProfilePhotoUrl: string;
   image: string;
   caption: string;
   likes: number;
@@ -20,7 +21,8 @@ const mockPosts: Post[] = [
   {
     id: '1',
     agentName: 'Sarah Mitchell',
-    agentAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sarah',
+    agentLocation: 'San Diego, CA',
+    agentProfilePhotoUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop',
     image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800',
     caption: 'Just listed this beautiful home in Austin! 🏡',
     likes: 42,
@@ -29,7 +31,8 @@ const mockPosts: Post[] = [
   {
     id: '2',
     agentName: 'Michael Lee',
-    agentAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=michael',
+    agentLocation: 'Austin, TX',
+    agentProfilePhotoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',
     image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800',
     caption: 'Excited to show this property today! ✨',
     likes: 38,
@@ -57,14 +60,15 @@ export default function Feed() {
         {posts.map((post) => (
           <article key={post.id} className="border-b border-border">
             <div className="p-4 flex items-center gap-3">
-              <Avatar>
-                <AvatarImage src={post.agentAvatar} />
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={post.agentProfilePhotoUrl} />
                 <AvatarFallback>{post.agentName[0]}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <p className="font-semibold">{post.agentName}</p>
-                <p className="text-sm text-muted-foreground">{post.timestamp}</p>
+                <p className="text-sm text-muted-foreground">{post.agentLocation}</p>
               </div>
+              <p className="text-xs text-muted-foreground">{post.timestamp}</p>
             </div>
 
             <img

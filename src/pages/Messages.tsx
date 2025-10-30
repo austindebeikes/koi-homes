@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 interface Conversation {
   id: string;
   name: string;
-  avatar: string;
+  profilePhotoUrl: string;
   lastMessage: string;
   timestamp: string;
   unread: boolean;
@@ -16,7 +16,7 @@ const mockConversations: Conversation[] = [
   {
     id: '1',
     name: 'Rachel',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=rachel',
+    profilePhotoUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop',
     lastMessage: 'Let me know if you have any questions!',
     timestamp: '2h ago',
     unread: true,
@@ -24,7 +24,7 @@ const mockConversations: Conversation[] = [
   {
     id: '2',
     name: 'Jennifer',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=jennifer',
+    profilePhotoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop',
     lastMessage: "Hi Janna, I saw your new listing and I'm interested...",
     timestamp: '1d ago',
     unread: false,
@@ -32,7 +32,7 @@ const mockConversations: Conversation[] = [
   {
     id: '3',
     name: 'Thomas',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=thomas',
+    profilePhotoUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop',
     lastMessage: 'That late works for me, Looking forward to it!',
     timestamp: '2d ago',
     unread: false,
@@ -54,7 +54,7 @@ export default function Messages() {
             className="flex items-center gap-4 p-4 border-b border-border hover:bg-accent transition-colors cursor-pointer"
           >
             <Avatar className="h-14 w-14">
-              <AvatarImage src={conversation.avatar} />
+              <AvatarImage src={conversation.profilePhotoUrl} />
               <AvatarFallback>{conversation.name[0]}</AvatarFallback>
             </Avatar>
 

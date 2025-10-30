@@ -11,7 +11,7 @@ interface Agent {
   id: string;
   name: string;
   location: string;
-  avatar: string;
+  profilePhotoUrl: string;
   followers: number;
 }
 
@@ -20,21 +20,21 @@ const mockAgents: Agent[] = [
     id: '1',
     name: 'Kelly Johnson',
     location: 'Los Angeles, CA',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=kelly',
+    profilePhotoUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop',
     followers: 1250,
   },
   {
     id: '2',
     name: 'Michael Lee',
     location: 'Austin, TX',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=michael',
+    profilePhotoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',
     followers: 890,
   },
   {
     id: '3',
     name: 'Sarah Mitchell',
     location: 'San Diego, CA',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sarah',
+    profilePhotoUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop',
     followers: 2100,
   },
 ];
@@ -73,7 +73,7 @@ export default function Search() {
               onClick={() => navigate(`/agent/${agent.id}`)}
             >
               <Avatar className="h-16 w-16">
-                <AvatarImage src={agent.avatar} />
+                <AvatarImage src={agent.profilePhotoUrl} />
                 <AvatarFallback>{agent.name[0]}</AvatarFallback>
               </Avatar>
 
