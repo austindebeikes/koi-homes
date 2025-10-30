@@ -1,4 +1,4 @@
-import { Home, Search, Heart, MessageCircle, User } from 'lucide-react';
+import { Home, Search, MessageCircle, User } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
@@ -8,7 +8,6 @@ export const BottomNav = () => {
   const navItems = [
     { icon: Home, label: 'Home', path: '/feed' },
     { icon: Search, label: 'Search', path: '/search' },
-    { icon: Heart, label: 'Likes', path: '/likes' },
     { icon: MessageCircle, label: 'Messages', path: '/messages' },
     { icon: User, label: 'Profile', path: '/profile' },
   ];

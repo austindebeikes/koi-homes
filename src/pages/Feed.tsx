@@ -38,17 +38,16 @@ const mockPosts: Post[] = [
 ];
 
 export default function Feed() {
-  const { user } = useAuth();
+  const { user, isMockMode } = useAuth();
   const navigate = useNavigate();
   const [posts] = useState<Post[]>(mockPosts);
 
   useEffect(() => {
-    if (!user) {
+    // Only redirect if not in mock mode and no user
+    if (!isMockMode && !user) {
       navigate('/auth');
     }
-  }, [user, navigate]);
-
-  if (!user) return null;
+  }, [user, isMockMode, navigate]);
 
   return (
     <div className="min-h-screen bg-background pb-20">

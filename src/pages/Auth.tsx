@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,6 +19,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { setMockUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,10 +27,15 @@ export default function Auth() {
 
     try {
       if (!isSupabaseConfigured) {
-        // Mock mode - just navigate to feed
+        // Mock mode - set mock user and navigate to feed
+        setMockUser(email, {
+          first_name: firstName || 'User',
+          last_name: lastName || '',
+          is_agent: isAgent,
+        });
         toast({
-          title: isLogin ? "Welcome!" : "Account created!",
-          description: "Running in preview mode without backend.",
+          title: isLogin ? "Welcome back!" : "Account created!",
+          description: "You're now logged in.",
         });
         navigate('/feed');
         return;

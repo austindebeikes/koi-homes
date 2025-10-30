@@ -8,6 +8,7 @@ interface AuthContextType {
   loading: boolean;
   signOut: () => Promise<void>;
   isMockMode: boolean;
+  setMockUser: (email: string, metadata?: any) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,11 +45,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     if (supabase) {
       await supabase.auth.signOut();
+    } else {
+      // Mock mode - clear mock user
+      setUser(null);
+      setSession(null);
+    }
+  };
+
+  const setMockUser = (email: string, metadata?: any) => {
+    if (isMockMode) {
+      const mockUser = {
+        id: Math.random().toString(36).substring(7),
+        email,
+        user_metadata: metadata || {},
+        app_metadata: {},
+        aud: 'authenticated',
+        created_at: new Date().toISOString(),
+      } as User;
+      setUser(mockUser);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signOut, isMockMode }}>
+    <AuthContext.Provider value={{ user, session, loading, signOut, isMockMode, setMockUser }}>
       {children}
     </AuthContext.Provider>
   );
