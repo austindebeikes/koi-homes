@@ -59,28 +59,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    // Set up auth state listener FIRST - use non-async callback
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
+        // Defer Supabase calls with setTimeout to prevent deadlocks
         if (session?.user) {
-          await loadProfile(session.user.id);
+          setTimeout(() => {
+            loadProfile(session.user.id);
+          }, 0);
         } else {
           setProfile(null);
         }
       }
     );
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        await loadProfile(session.user.id);
+        loadProfile(session.user.id).then(() => {
+          setLoading(false);
+        });
+      } else {
+        setLoading(false);
       }
-      
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
