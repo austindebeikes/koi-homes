@@ -49,8 +49,12 @@ export default function Auth() {
 
         if (authError) throw authError;
         if (!authData.user) throw new Error('No user returned from signup');
+        if (!authData.session) throw new Error('No session established after signup');
 
-        // Create profile in public.users
+        // Wait a moment to ensure session is fully propagated
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Create profile in public.users (now as authenticated user)
         const { error: profileError } = await supabase
           .from('users')
           .insert({

@@ -45,7 +45,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     
-    setProfile(data);
+    // Cast role to expected type
+    setProfile({
+      ...data,
+      role: data.role as 'Agent' | 'Buyer'
+    });
   };
 
   const refreshProfile = async () => {
