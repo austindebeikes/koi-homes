@@ -8,10 +8,12 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { refreshProfile } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -93,6 +95,9 @@ export default function Auth() {
           });
 
         if (profileError) throw profileError;
+
+        // Refresh profile in context so the app has the latest data
+        await refreshProfile?.();
 
         toast({
           title: "Account created!",
