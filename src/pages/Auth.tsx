@@ -50,15 +50,21 @@ export default function Auth() {
         if (authError) throw authError;
         if (!authData.user) throw new Error('No user returned from signup');
 
-        // If no session returned from signup, sign in to get a session
-        let session = authData.session;
-        if (!session) {
-          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-          
-          if (signInError) throw signInError;
+        // Always attempt to sign in immediately to ensure a valid session
+        let session = null;
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (signInError) {
+          // If sign-in failed but signup returned a session (edge case), use it
+          if (authData.session) {
+            session = authData.session;
+          } else {
+            throw signInError;
+          }
+        } else {
           session = signInData.session;
         }
 
