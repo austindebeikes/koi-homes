@@ -31,7 +31,7 @@ export default function Search() {
     try {
       const { data, error } = await supabase
         .from('users')
-        .select('*')
+        .select('id, first_name, last_name, role, city, profile_photo_url, bio, followers_count, following_count, posts_count')
         .eq('role', 'Agent')
         .order('first_name');
 

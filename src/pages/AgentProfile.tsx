@@ -40,13 +40,13 @@ export default function AgentProfile() {
     }
   }, [id]);
 
-  const loadAgentData = async () => {
-    try {
-      const { data: agentData, error: agentError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', id)
-        .single();
+    const loadAgentData = async () => {
+      try {
+        const { data: agentData, error: agentError } = await supabase
+          .from('users')
+          .select('id, first_name, last_name, role, city, profile_photo_url, bio, followers_count, following_count, posts_count')
+          .eq('id', id)
+          .single();
 
       if (agentError) throw agentError;
       setAgent(agentData);
