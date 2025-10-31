@@ -14,7 +14,122 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      messages: {
+        Row: {
+          body: string
+          created_at: string | null
+          id: string
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string | null
+          id?: string
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string | null
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts: {
+        Row: {
+          caption: string | null
+          created_at: string | null
+          id: string
+          photo_url: string
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string | null
+          id?: string
+          photo_url: string
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string | null
+          id?: string
+          photo_url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          bio: string | null
+          city: string
+          created_at: string | null
+          email: string
+          first_name: string
+          followers_count: number | null
+          following_count: number | null
+          id: string
+          last_name: string
+          posts_count: number | null
+          profile_photo_url: string
+          role: string
+        }
+        Insert: {
+          bio?: string | null
+          city: string
+          created_at?: string | null
+          email: string
+          first_name: string
+          followers_count?: number | null
+          following_count?: number | null
+          id: string
+          last_name: string
+          posts_count?: number | null
+          profile_photo_url: string
+          role: string
+        }
+        Update: {
+          bio?: string | null
+          city?: string
+          created_at?: string | null
+          email?: string
+          first_name?: string
+          followers_count?: number | null
+          following_count?: number | null
+          id?: string
+          last_name?: string
+          posts_count?: number | null
+          profile_photo_url?: string
+          role?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
