@@ -1,51 +1,32 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { AppHeader } from '@/components/AppHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { AppHeader } from '@/components/AppHeader';
 import { Loader2 } from 'lucide-react';
 
 export default function Auth() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [isAgent, setIsAgent] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const { setMockUser } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setIsLoading(true);
 
     try {
-      if (!isSupabaseConfigured) {
-        // Mock mode - set mock user and navigate to feed
-        setMockUser(email, {
-          first_name: firstName || 'User',
-          last_name: lastName || '',
-          role: isAgent ? 'Agent' : 'Buyer',
-          city: 'San Diego, CA',
-          bio: '',
-          phone: '',
-        });
-        toast({
-          title: isLogin ? "Welcome back!" : "Account created!",
-          description: "You're now logged in.",
-        });
-        navigate('/feed');
-        return;
-      }
-
       if (isLogin) {
-        const { error } = await supabase!.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
@@ -54,134 +35,139 @@ export default function Auth() {
 
         toast({
           title: "Welcome back!",
-          description: "You've successfully logged in.",
+          description: "You've been logged in successfully.",
         });
-        navigate('/feed');
       } else {
-        const { error } = await supabase!.auth.signUp({
+        // Sign up flow
+        const { data: authData, error: authError } = await supabase.auth.signUp({
           email,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
-            data: {
-              first_name: firstName,
-              last_name: lastName,
-              role: isAgent ? 'Agent' : 'Buyer',
-              city: 'San Diego, CA',
-              bio: '',
-              phone: '',
-            },
           },
         });
 
-        if (error) throw error;
+        if (authError) throw authError;
+        if (!authData.user) throw new Error('No user returned from signup');
+
+        // Create profile in public.users
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert({
+            id: authData.user.id,
+            email,
+            first_name: firstName,
+            last_name: lastName,
+            role: isAgent ? 'Agent' : 'Buyer',
+            city: 'San Diego, CA',
+            bio: isAgent 
+              ? 'Helping clients buy and sell homes. Passionate about real estate and connecting people with their dream properties.'
+              : 'Looking for my dream home.',
+            profile_photo_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop',
+            followers_count: 0,
+            following_count: 0,
+            posts_count: 0,
+          });
+
+        if (profileError) throw profileError;
 
         toast({
           title: "Account created!",
-          description: "You've successfully signed up.",
+          description: "Welcome to Koi!",
         });
-        navigate('/feed');
       }
+
+      navigate('/');
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "An error occurred during authentication.",
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <AppHeader />
+    <div className="min-h-screen bg-background">
+      <AppHeader title={isLogin ? "Log in" : "Sign up"} showLogo={false} />
       
-      <div className="flex-1 flex items-center justify-center px-4 pb-20">
-        <div className="w-full max-w-sm space-y-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold">
-              {isLogin ? 'Log in' : 'Sign up'}
-            </h2>
+      <div className="max-w-md mx-auto p-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {!isLogin && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  id="firstName"
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="isAgent"
+                  checked={isAgent}
+                  onCheckedChange={(checked) => setIsAgent(checked as boolean)}
+                />
+                <Label htmlFor="isAgent" className="cursor-pointer">
+                  I'm a Real Estate Agent
+                </Label>
+              </div>
+            </>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {!isLogin && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    type="text"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    type="text"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <input
-                    id="isAgent"
-                    type="checkbox"
-                    checked={isAgent}
-                    onChange={(e) => setIsAgent(e.target.checked)}
-                    className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
-                  />
-                  <Label htmlFor="isAgent" className="cursor-pointer">
-                    I'm a Real Estate Agent
-                  </Label>
-                </div>
-              </>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            <Button type="submit" className="w-full" size="lg" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isLogin ? 'Log in' : 'Sign Up'}
-            </Button>
-          </form>
-
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-primary hover:underline"
-            >
-              {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Log in'}
-            </button>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </div>
+
+          <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isLogin ? 'Log in' : 'Sign Up'}
+          </Button>
+        </form>
+
+        <div className="text-center mt-4">
+          <button
+            type="button"
+            onClick={() => setIsLogin(!isLogin)}
+            className="text-primary hover:underline"
+          >
+            {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Log in'}
+          </button>
         </div>
       </div>
     </div>

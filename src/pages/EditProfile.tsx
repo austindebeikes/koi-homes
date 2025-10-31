@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { AppHeader } from '@/components/AppHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,33 +11,34 @@ import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function EditProfile() {
-  const { user, setMockUser } = useAuth();
+  const { profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [profilePhoto, setProfilePhoto] = useState(
-    user?.user_metadata?.profile_photo || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop'
-  );
-  const [firstName, setFirstName] = useState(user?.user_metadata?.first_name || '');
-  const [lastName, setLastName] = useState(user?.user_metadata?.last_name || '');
-  const [city, setCity] = useState(user?.user_metadata?.city || 'San Diego, CA');
-  const [bio, setBio] = useState(
-    user?.user_metadata?.bio || 'Helping clients buy and sell homes. Passionate about real estate and connecting people with their dream properties.'
-  );
-  const [phone, setPhone] = useState(user?.user_metadata?.phone || '');
+  const [profilePhoto, setProfilePhoto] = useState(profile?.profile_photo_url || '');
+  const [firstName, setFirstName] = useState(profile?.first_name || '');
+  const [lastName, setLastName] = useState(profile?.last_name || '');
+  const [city, setCity] = useState(profile?.city || 'San Diego, CA');
+  const [bio, setBio] = useState(profile?.bio || '');
 
-  const handleSave = () => {
-    // Update mock user with new data
-    if (user) {
-      setMockUser(user.email || '', {
-        first_name: firstName,
-        last_name: lastName,
-        role: user.user_metadata?.role,
-        city,
-        bio,
-        phone,
-        profile_photo: profilePhoto,
-      });
+  const handleSave = async () => {
+    if (!profile?.id) return;
+
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          first_name: firstName,
+          last_name: lastName,
+          city,
+          bio,
+          profile_photo_url: profilePhoto,
+        })
+        .eq('id', profile.id);
+
+      if (error) throw error;
+
+      await refreshProfile();
 
       toast({
         title: "Profile updated!",
@@ -44,6 +46,12 @@ export default function EditProfile() {
       });
 
       navigate('/profile');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update profile.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -96,17 +104,6 @@ export default function EditProfile() {
             value={city}
             onChange={(e) => setCity(e.target.value)}
             placeholder="San Diego, CA"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="phone">Phone</Label>
-          <Input
-            id="phone"
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="(555) 123-4567"
           />
         </div>
 

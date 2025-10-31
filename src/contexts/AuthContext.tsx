@@ -1,42 +1,81 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
+
+interface ProfileData {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: 'Agent' | 'Buyer';
+  city: string;
+  bio: string;
+  profile_photo_url: string;
+  followers_count: number;
+  following_count: number;
+  posts_count: number;
+}
 
 interface AuthContextType {
   user: User | null;
+  profile: ProfileData | null;
   session: Session | null;
   loading: boolean;
   signOut: () => Promise<void>;
-  isMockMode: boolean;
-  setMockUser: (email: string, metadata?: any) => void;
-  addPost: (post: { imageUrl: string; caption: string }) => void;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const isMockMode = !isSupabaseConfigured;
 
-  useEffect(() => {
-    if (!supabase) {
-      // Mock mode - no auth needed
-      setLoading(false);
+  const loadProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    
+    if (error) {
+      console.error('Error loading profile:', error);
       return;
     }
+    
+    setProfile(data);
+  };
 
+  const refreshProfile = async () => {
+    if (user?.id) {
+      await loadProfile(user.id);
+    }
+  };
+
+  useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      async (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          await loadProfile(session.user.id);
+        } else {
+          setProfile(null);
+        }
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        await loadProfile(session.user.id);
+      }
+      
       setLoading(false);
     });
 
@@ -44,48 +83,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signOut = async () => {
-    if (supabase) {
-      await supabase.auth.signOut();
-    } else {
-      // Mock mode - clear mock user
-      setUser(null);
-      setSession(null);
-    }
-  };
-
-  const setMockUser = (email: string, metadata?: any) => {
-    if (isMockMode) {
-      const mockUser = {
-        id: Math.random().toString(36).substring(7),
-        email,
-        user_metadata: {
-          posts: [],
-          ...metadata,
-        },
-        app_metadata: {},
-        aud: 'authenticated',
-        created_at: new Date().toISOString(),
-      } as User;
-      setUser(mockUser);
-    }
-  };
-
-  const addPost = (post: { imageUrl: string; caption: string }) => {
-    if (user?.user_metadata) {
-      const currentPosts = user.user_metadata.posts || [];
-      const updatedUser = {
-        ...user,
-        user_metadata: {
-          ...user.user_metadata,
-          posts: [post, ...currentPosts],
-        },
-      } as User;
-      setUser(updatedUser);
-    }
+    await supabase.auth.signOut();
+    setProfile(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signOut, isMockMode, setMockUser, addPost }}>
+    <AuthContext.Provider value={{ user, profile, session, loading, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

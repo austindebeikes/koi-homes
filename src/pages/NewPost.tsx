@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { AppHeader } from '@/components/AppHeader';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
@@ -11,13 +12,13 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function NewPost() {
   const navigate = useNavigate();
-  const { addPost } = useAuth();
+  const { profile, refreshProfile } = useAuth();
   const { toast } = useToast();
   const [imageUrl, setImageUrl] = useState('');
   const [caption, setCaption] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!imageUrl.trim()) {
@@ -29,21 +30,48 @@ export default function NewPost() {
       return;
     }
 
+    if (!profile?.id) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create a post.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     
-    // Add post to user's posts
-    addPost({
-      imageUrl: imageUrl.trim(),
-      caption: caption.trim(),
-    });
+    try {
+      // Insert post into Supabase
+      const { error } = await supabase
+        .from('posts')
+        .insert({
+          user_id: profile.id,
+          photo_url: imageUrl.trim(),
+          caption: caption.trim(),
+        });
 
-    toast({
-      title: "Post created!",
-      description: "Your new post has been added to your profile.",
-    });
+      if (error) throw error;
 
-    // Navigate back to profile
-    navigate('/profile');
+      // Refresh profile to update post count
+      await refreshProfile();
+
+      toast({
+        title: "Post created!",
+        description: "Your new post has been added to your profile.",
+      });
+
+      // Navigate back to profile
+      navigate('/profile');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create post.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

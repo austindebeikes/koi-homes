@@ -1,24 +1,89 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { AppHeader } from '@/components/AppHeader';
 import { BottomNav } from '@/components/BottomNav';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MessageCircle } from 'lucide-react';
-import { mockUsers } from '@/lib/mockData';
+
+interface AgentData {
+  id: string;
+  first_name: string;
+  last_name: string;
+  role: string;
+  city: string;
+  bio: string;
+  profile_photo_url: string;
+  followers_count: number;
+  following_count: number;
+  posts_count: number;
+}
+
+interface Post {
+  id: string;
+  photo_url: string;
+  caption: string;
+}
 
 export default function AgentProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  
-  const agent = id ? mockUsers[id] : null;
+  const [agent, setAgent] = useState<AgentData | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (id) {
+      loadAgentData();
+    }
+  }, [id]);
+
+  const loadAgentData = async () => {
+    try {
+      const { data: agentData, error: agentError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (agentError) throw agentError;
+      setAgent(agentData);
+
+      const { data: postsData, error: postsError } = await supabase
+        .from('posts')
+        .select('*')
+        .eq('user_id', id)
+        .order('created_at', { ascending: false });
+
+      if (postsError) throw postsError;
+      setPosts(postsData || []);
+    } catch (error) {
+      console.error('Error loading agent data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <AppHeader title="Agent Profile" showLogo={false} />
+        <div className="flex items-center justify-center p-6">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
 
   if (!agent) {
     return (
       <div className="min-h-screen bg-background pb-20">
         <AppHeader title="Agent Profile" showLogo={false} />
-        <div className="max-w-md mx-auto p-6">
-          <p className="text-center text-muted-foreground">Agent not found</p>
+        <div className="flex items-center justify-center p-6">
+          <p className="text-muted-foreground">Agent not found</p>
         </div>
         <BottomNav />
       </div>
@@ -27,21 +92,21 @@ export default function AgentProfile() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <AppHeader title={`${agent.firstName} ${agent.lastName}`} showLogo={false} />
+      <AppHeader title="Agent Profile" showLogo={false} />
 
       <div className="max-w-md mx-auto">
         <div className="p-6 space-y-4">
           <div className="flex items-start gap-4">
             <Avatar className="h-24 w-24">
-              <AvatarImage src={agent.profilePhotoUrl} alt={`${agent.firstName} ${agent.lastName}`} />
+              <AvatarImage src={agent.profile_photo_url} alt="Profile" />
               <AvatarFallback>
-                {agent.firstName[0]}{agent.lastName[0]}
+                {agent.first_name[0]}{agent.last_name[0]}
               </AvatarFallback>
             </Avatar>
 
             <div className="flex-1 min-w-0">
               <h2 className="text-xl font-bold">
-                {agent.firstName} {agent.lastName}
+                {agent.first_name} {agent.last_name}
               </h2>
               <p className="text-muted-foreground text-sm">
                 {agent.role === 'Agent' ? 'Real Estate Agent' : 'Home Buyer'}
@@ -67,15 +132,15 @@ export default function AgentProfile() {
 
           <div className="flex gap-6 text-center">
             <div>
-              <p className="font-bold text-lg">{agent.posts}</p>
+              <p className="font-bold text-lg">{posts.length}</p>
               <p className="text-sm text-muted-foreground">Posts</p>
             </div>
             <div>
-              <p className="font-bold text-lg">{agent.followers}</p>
+              <p className="font-bold text-lg">{agent.followers_count}</p>
               <p className="text-sm text-muted-foreground">Followers</p>
             </div>
             <div>
-              <p className="font-bold text-lg">{agent.following}</p>
+              <p className="font-bold text-lg">{agent.following_count}</p>
               <p className="text-sm text-muted-foreground">Following</p>
             </div>
           </div>
@@ -90,14 +155,20 @@ export default function AgentProfile() {
 
           <TabsContent value="posts" className="p-1">
             <div className="grid grid-cols-2 gap-1">
-              {agent.recentPosts.map((post, idx) => (
-                <img
-                  key={idx}
-                  src={post.imageUrl}
-                  alt={post.caption}
-                  className="w-full aspect-square object-cover rounded"
-                />
-              ))}
+              {posts.length > 0 ? (
+                posts.map((post) => (
+                  <img
+                    key={post.id}
+                    src={post.photo_url}
+                    alt={post.caption || 'Post'}
+                    className="w-full aspect-square object-cover rounded"
+                  />
+                ))
+              ) : (
+                <p className="col-span-2 text-center text-muted-foreground py-8">
+                  No posts yet
+                </p>
+              )}
             </div>
           </TabsContent>
 

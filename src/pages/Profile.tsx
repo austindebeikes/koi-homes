@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { AppHeader } from '@/components/AppHeader';
 import { BottomNav } from '@/components/BottomNav';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -8,15 +10,49 @@ import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 
 export default function Profile() {
-  const { user, signOut } = useAuth();
+  const { profile, signOut } = useAuth();
   const navigate = useNavigate();
+  const [posts, setPosts] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (profile?.id) {
+      loadPosts();
+    }
+  }, [profile?.id]);
+
+  const loadPosts = async () => {
+    if (!profile?.id) return;
+    
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*')
+      .eq('user_id', profile.id)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error loading posts:', error);
+      return;
+    }
+    
+    setPosts(data || []);
+  };
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/auth');
   };
 
-  const userPosts = user?.user_metadata?.posts || [];
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <AppHeader title="Profile" showLogo={false} />
+        <div className="flex items-center justify-center p-6">
+          <p className="text-muted-foreground">Loading profile...</p>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -27,23 +63,23 @@ export default function Profile() {
           <div className="flex items-start gap-4">
             <Avatar className="h-24 w-24">
               <AvatarImage 
-                src={user?.user_metadata?.profile_photo || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop"} 
+                src={profile.profile_photo_url} 
                 alt="Profile"
               />
               <AvatarFallback>
-                {user?.email?.[0].toUpperCase()}
+                {profile.first_name?.[0]}{profile.last_name?.[0]}
               </AvatarFallback>
             </Avatar>
 
             <div className="flex-1 min-w-0">
               <h2 className="text-xl font-bold">
-                {user?.user_metadata?.firstName || user?.user_metadata?.first_name} {user?.user_metadata?.lastName || user?.user_metadata?.last_name}
+                {profile.first_name} {profile.last_name}
               </h2>
               <p className="text-muted-foreground text-sm">
-                {user?.user_metadata?.role === 'Agent' ? 'Real Estate Agent' : 'Home Buyer'}
+                {profile.role === 'Agent' ? 'Real Estate Agent' : 'Home Buyer'}
               </p>
               <p className="text-sm text-muted-foreground">
-                {user?.user_metadata?.city || 'San Diego, CA'}
+                {profile.city}
               </p>
             </div>
 
@@ -66,20 +102,20 @@ export default function Profile() {
           </Button>
 
           <p className="text-sm">
-            {user?.user_metadata?.bio || 'Helping clients buy and sell homes. Passionate about real estate and connecting people with their dream properties.'}
+            {profile.bio}
           </p>
 
           <div className="flex gap-6 text-center">
             <div>
-              <p className="font-bold text-lg">55</p>
+              <p className="font-bold text-lg">{posts.length}</p>
               <p className="text-sm text-muted-foreground">Posts</p>
             </div>
             <div>
-              <p className="font-bold text-lg">1.2K</p>
+              <p className="font-bold text-lg">{profile.followers_count}</p>
               <p className="text-sm text-muted-foreground">Followers</p>
             </div>
             <div>
-              <p className="font-bold text-lg">340</p>
+              <p className="font-bold text-lg">{profile.following_count}</p>
               <p className="text-sm text-muted-foreground">Following</p>
             </div>
           </div>
@@ -98,12 +134,12 @@ export default function Profile() {
 
           <TabsContent value="posts" className="p-1">
             <div className="grid grid-cols-2 gap-1">
-              {userPosts.length > 0 ? (
-                userPosts.map((post: any, idx: number) => (
+              {posts.length > 0 ? (
+                posts.map((post) => (
                   <img
-                    key={idx}
-                    src={post.imageUrl}
-                    alt={post.caption || `Post ${idx + 1}`}
+                    key={post.id}
+                    src={post.photo_url}
+                    alt={post.caption || 'Post'}
                     className="w-full aspect-square object-cover rounded"
                   />
                 ))
