@@ -49,7 +49,20 @@ export default function Auth() {
 
         if (authError) throw authError;
         if (!authData.user) throw new Error('No user returned from signup');
-        if (!authData.session) throw new Error('No session established after signup');
+
+        // If no session returned from signup, sign in to get a session
+        let session = authData.session;
+        if (!session) {
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+          
+          if (signInError) throw signInError;
+          session = signInData.session;
+        }
+
+        if (!session) throw new Error('Could not establish session');
 
         // Wait a moment to ensure session is fully propagated
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -58,7 +71,7 @@ export default function Auth() {
         const { error: profileError } = await supabase
           .from('users')
           .insert({
-            id: authData.user.id,
+            id: session.user.id,
             email,
             first_name: firstName,
             last_name: lastName,
