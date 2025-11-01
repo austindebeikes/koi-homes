@@ -64,6 +64,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+        setLoading(false);
         
         // Defer Supabase calls with setTimeout to prevent deadlocks
         if (session?.user) {
