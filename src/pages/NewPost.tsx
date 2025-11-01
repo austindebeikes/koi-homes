@@ -5,10 +5,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { AppHeader } from '@/components/AppHeader';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { ImageUpload } from '@/components/ImageUpload';
 
 export default function NewPost() {
   const navigate = useNavigate();
@@ -80,17 +80,11 @@ export default function NewPost() {
 
       <div className="max-w-md mx-auto p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="imageUrl">Photo URL</Label>
-            <Input
-              id="imageUrl"
-              type="url"
-              placeholder="https://example.com/photo.jpg"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              required
-            />
-          </div>
+          <ImageUpload
+            onUploadComplete={(url) => setImageUrl(url)}
+            currentImageUrl={imageUrl}
+            label="Post Photo"
+          />
 
           <div className="space-y-2">
             <Label htmlFor="caption">Caption</Label>
@@ -102,20 +96,6 @@ export default function NewPost() {
               rows={4}
             />
           </div>
-
-          {imageUrl && (
-            <div className="space-y-2">
-              <Label>Preview</Label>
-              <img
-                src={imageUrl}
-                alt="Post preview"
-                className="w-full aspect-square object-cover rounded-lg"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                }}
-              />
-            </div>
-          )}
 
           <div className="flex gap-3">
             <Button

@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ImageUpload } from '@/components/ImageUpload';
 
 export default function EditProfile() {
   const { profile, refreshProfile } = useAuth();
@@ -67,17 +68,13 @@ export default function EditProfile() {
               {firstName?.[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="w-full space-y-2">
-            <Label htmlFor="profilePhoto">Profile Photo URL</Label>
-            <Input
-              id="profilePhoto"
-              type="url"
-              value={profilePhoto}
-              onChange={(e) => setProfilePhoto(e.target.value)}
-              placeholder="https://example.com/photo.jpg"
-            />
-          </div>
         </div>
+
+        <ImageUpload
+          onUploadComplete={(url) => setProfilePhoto(url)}
+          currentImageUrl={profilePhoto}
+          label="Profile Photo"
+        />
 
         <div className="space-y-2">
           <Label htmlFor="firstName">First Name</Label>

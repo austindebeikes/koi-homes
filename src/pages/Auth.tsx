@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import koiLogo from '@/assets/koi-logo.png';
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -122,6 +123,17 @@ export default function Auth() {
       <AppHeader title={isLogin ? "Log in" : "Sign up"} showLogo={false} />
       
       <div className="max-w-md mx-auto p-6">
+        {/* Branded Header */}
+        <div className="flex flex-col items-center gap-3 mb-8">
+          <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+            <img src={koiLogo} alt="Koi" className="h-10 w-10" />
+          </div>
+          <h2 className="text-3xl font-bold text-primary">Koi</h2>
+          <p className="text-muted-foreground text-center">
+            {isLogin ? 'Welcome back' : 'Join the community'}
+          </p>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <>
@@ -147,13 +159,13 @@ export default function Auth() {
                 />
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 p-4 rounded-lg border-2 border-input hover:border-primary transition-colors cursor-pointer">
                 <Checkbox
                   id="isAgent"
                   checked={isAgent}
                   onCheckedChange={(checked) => setIsAgent(checked as boolean)}
                 />
-                <Label htmlFor="isAgent" className="cursor-pointer">
+                <Label htmlFor="isAgent" className="cursor-pointer font-medium">
                   I'm a Real Estate Agent
                 </Label>
               </div>

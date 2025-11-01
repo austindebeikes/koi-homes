@@ -11,7 +11,9 @@ export const AppHeader = ({ title, showLogo = true }: AppHeaderProps) => {
       <div className="max-w-md mx-auto px-4 h-14 flex items-center justify-center">
         {showLogo && (
           <div className="flex items-center gap-2">
-            <img src={koiLogo} alt="Koi" className="h-8 w-8" />
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <img src={koiLogo} alt="Koi" className="h-6 w-6" />
+            </div>
             <h1 className="text-2xl font-bold">Koi</h1>
           </div>
         )}
