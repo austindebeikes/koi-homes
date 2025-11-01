@@ -137,7 +137,13 @@ export default function Search() {
             >
               <div 
                 className="flex items-center gap-3 flex-1 cursor-pointer"
-                onClick={() => navigate(`/agent/${agent.id}`)}
+                onClick={() => {
+                  if (agent.id === profile?.id) {
+                    navigate('/profile');
+                  } else {
+                    navigate(`/agent/${agent.id}`);
+                  }
+                }}
               >
                 <Avatar className="h-12 w-12">
                   <AvatarImage src={agent.profile_photo_url} alt={`${agent.first_name} ${agent.last_name}`} />

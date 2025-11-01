@@ -41,6 +41,7 @@ export default function AgentProfile() {
   const [followingCount, setFollowingCount] = useState(0);
   const [showCoffeeDialog, setShowCoffeeDialog] = useState(false);
   const [showVideoDialog, setShowVideoDialog] = useState(false);
+  const [requestSent, setRequestSent] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -139,6 +140,25 @@ export default function AgentProfile() {
     }
   };
 
+  const handleIntroRequest = async (type: 'coffee' | 'video') => {
+    if (!profile?.id || !id) return;
+
+    try {
+      await supabase
+        .from('intros')
+        .insert({
+          buyer_id: profile.id,
+          agent_id: id,
+          type: type,
+        });
+
+      setRequestSent(type);
+      setTimeout(() => setRequestSent(null), 3000);
+    } catch (error) {
+      console.error('Error creating intro request:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background pb-20">
@@ -212,26 +232,33 @@ export default function AgentProfile() {
           </div>
 
           {profile?.id !== id && (
-            <div className="flex gap-2 pt-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                size="lg"
-                onClick={() => setShowCoffeeDialog(true)}
-              >
-                <Coffee className="mr-2 h-5 w-5" />
-                Coffee Chat
-              </Button>
-              <Button
-                variant="outline"
-                className="flex-1"
-                size="lg"
-                onClick={() => setShowVideoDialog(true)}
-              >
-                <Video className="mr-2 h-5 w-5" />
-                Video Call
-              </Button>
-            </div>
+            <>
+              <div className="flex gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  size="lg"
+                  onClick={() => handleIntroRequest('coffee')}
+                >
+                  <Coffee className="mr-2 h-5 w-5" />
+                  Coffee Chat
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  size="lg"
+                  onClick={() => handleIntroRequest('video')}
+                >
+                  <Video className="mr-2 h-5 w-5" />
+                  Video Call
+                </Button>
+              </div>
+              {requestSent && (
+                <p className="text-sm text-primary text-center pt-2">
+                  Request sent to this agent.
+                </p>
+              )}
+            </>
           )}
 
           <p className="text-sm">
@@ -257,8 +284,7 @@ export default function AgentProfile() {
         <Tabs defaultValue="posts" className="w-full">
           <TabsList className="w-full">
             <TabsTrigger value="posts" className="flex-1">Posts</TabsTrigger>
-            <TabsTrigger value="lifestyle" className="flex-1">Lifestyle</TabsTrigger>
-            <TabsTrigger value="highlights" className="flex-1">Highlights</TabsTrigger>
+            <TabsTrigger value="services" className="flex-1">Services</TabsTrigger>
           </TabsList>
 
           <TabsContent value="posts" className="p-1">
@@ -281,43 +307,18 @@ export default function AgentProfile() {
             </div>
           </TabsContent>
 
-          <TabsContent value="lifestyle" className="p-4">
-            <p className="text-center text-muted-foreground">No lifestyle posts yet</p>
-          </TabsContent>
-
-          <TabsContent value="highlights" className="p-4">
-            <p className="text-center text-muted-foreground">No highlights yet</p>
+          <TabsContent value="services" className="p-4">
+            <div className="flex flex-wrap gap-2">
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">First-time buyers</span>
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">VA loans</span>
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">Relocation</span>
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">Off-market deals</span>
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">Coastal expert</span>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
 
-      <Dialog open={showCoffeeDialog} onOpenChange={setShowCoffeeDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Coffee Chat Request</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p className="text-muted-foreground">
-              Request a buyer consultation / coffee meeting with {agent?.first_name} {agent?.last_name}. Coming soon.
-            </p>
-          </div>
-          <Button onClick={() => setShowCoffeeDialog(false)}>Close</Button>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showVideoDialog} onOpenChange={setShowVideoDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Video Call Request</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p className="text-muted-foreground">
-              Request a video call with {agent?.first_name} {agent?.last_name}. Coming soon.
-            </p>
-          </div>
-          <Button onClick={() => setShowVideoDialog(false)}>Close</Button>
-        </DialogContent>
-      </Dialog>
 
       <BottomNav />
     </div>

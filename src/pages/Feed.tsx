@@ -39,6 +39,7 @@ export default function Feed() {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'photos' | 'dailys'>('photos');
 
   useEffect(() => {
     if (!user) {
@@ -156,17 +157,51 @@ export default function Feed() {
     );
   }
 
+  const filteredPosts = posts.filter(post => {
+    if (activeTab === 'photos') {
+      return post.photo_url && post.photo_url.trim() !== '';
+    } else {
+      return !post.photo_url || post.photo_url.trim() === '';
+    }
+  });
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <AppHeader title="Feed" />
 
       <div className="max-w-md mx-auto">
-        {posts.length === 0 ? (
+        <div className="flex gap-2 p-4 border-b border-border">
+          <button
+            onClick={() => setActiveTab('photos')}
+            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
+              activeTab === 'photos'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+            }`}
+          >
+            Photos
+          </button>
+          <button
+            onClick={() => setActiveTab('dailys')}
+            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
+              activeTab === 'dailys'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+            }`}
+          >
+            Daily&apos;s
+          </button>
+        </div>
+        {filteredPosts.length === 0 ? (
           <div className="flex items-center justify-center p-6">
-            <p className="text-muted-foreground">No posts yet. Follow some agents to see their content!</p>
+            <p className="text-muted-foreground">
+              {activeTab === 'photos' 
+                ? 'No photo posts yet. Follow some agents to see their content!'
+                : 'No daily updates yet. Follow some agents to see their content!'}
+            </p>
           </div>
         ) : (
-          posts.map((post) => (
+          filteredPosts.map((post) => (
             <div key={post.id} className="mb-6 border-b border-border pb-4">
               <div className="flex items-center gap-3 p-4">
                 <Avatar className="h-10 w-10">
@@ -179,12 +214,14 @@ export default function Feed() {
                 </div>
               </div>
 
-              <img
-                src={post.photo_url}
-                alt="Post"
-                className="w-full aspect-square object-cover cursor-pointer"
-                onClick={() => navigate(`/post/${post.id}`)}
-              />
+              {post.photo_url && post.photo_url.trim() !== '' && (
+                <img
+                  src={post.photo_url}
+                  alt="Post"
+                  className="w-full aspect-square object-cover cursor-pointer"
+                  onClick={() => navigate(`/post/${post.id}`)}
+                />
+              )}
 
               <div className="p-4 space-y-2">
                 <div className="flex gap-4">

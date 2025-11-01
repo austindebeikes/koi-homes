@@ -150,8 +150,7 @@ export default function Profile() {
         <Tabs defaultValue="posts" className="w-full">
           <TabsList className="w-full">
             <TabsTrigger value="posts" className="flex-1">Posts</TabsTrigger>
-            <TabsTrigger value="lifestyle" className="flex-1">Lifestyle</TabsTrigger>
-            <TabsTrigger value="highlights" className="flex-1">Highlights</TabsTrigger>
+            <TabsTrigger value="services" className="flex-1">Services</TabsTrigger>
           </TabsList>
 
           <TabsContent value="posts" className="p-1">
@@ -180,12 +179,14 @@ export default function Profile() {
             </div>
           </TabsContent>
 
-          <TabsContent value="lifestyle" className="p-4">
-            <p className="text-center text-muted-foreground">No lifestyle posts yet</p>
-          </TabsContent>
-
-          <TabsContent value="highlights" className="p-4">
-            <p className="text-center text-muted-foreground">No highlights yet</p>
+          <TabsContent value="services" className="p-4">
+            <div className="flex flex-wrap gap-2">
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">First-time buyers</span>
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">VA loans</span>
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">Relocation</span>
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">Off-market deals</span>
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">Coastal expert</span>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

@@ -17,14 +17,24 @@ export default function NewPost() {
   const [imageUrl, setImageUrl] = useState('');
   const [caption, setCaption] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [postType, setPostType] = useState<'photo' | 'daily'>('photo');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!imageUrl.trim()) {
+    if (postType === 'photo' && !imageUrl.trim()) {
       toast({
         title: "Image URL required",
         description: "Please provide a photo URL for your post.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (postType === 'daily' && !caption.trim()) {
+      toast({
+        title: "Content required",
+        description: "Please write some content for your daily update.",
         variant: "destructive",
       });
       return;
@@ -47,7 +57,7 @@ export default function NewPost() {
         .from('posts')
         .insert({
           user_id: profile.id,
-          photo_url: imageUrl.trim(),
+          photo_url: postType === 'photo' ? imageUrl.trim() : '',
           caption: caption.trim(),
         });
 
@@ -75,21 +85,44 @@ export default function NewPost() {
 
       <div className="max-w-md mx-auto p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <ImageUpload
-            onUploadComplete={(url) => setImageUrl(url)}
-            currentImageUrl={imageUrl}
-            label="Post Photo"
-            bucketName="post-photos"
-          />
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant={postType === 'photo' ? 'default' : 'outline'}
+              className="flex-1"
+              onClick={() => setPostType('photo')}
+            >
+              Photo Post
+            </Button>
+            <Button
+              type="button"
+              variant={postType === 'daily' ? 'default' : 'outline'}
+              className="flex-1"
+              onClick={() => setPostType('daily')}
+            >
+              Daily Update
+            </Button>
+          </div>
+
+          {postType === 'photo' && (
+            <ImageUpload
+              onUploadComplete={(url) => setImageUrl(url)}
+              currentImageUrl={imageUrl}
+              label="Post Photo"
+              bucketName="post-photos"
+            />
+          )}
 
           <div className="space-y-2">
-            <Label htmlFor="caption">Caption</Label>
+            <Label htmlFor="caption">{postType === 'photo' ? 'Caption' : 'Daily Update'}</Label>
             <Textarea
               id="caption"
-              placeholder="Write a caption for your post..."
+              placeholder={postType === 'photo' 
+                ? 'Write a caption for your post...' 
+                : 'Share a quick update with your followers...'}
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
-              rows={4}
+              rows={postType === 'daily' ? 6 : 4}
             />
           </div>
 

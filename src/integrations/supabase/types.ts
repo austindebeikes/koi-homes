@@ -86,6 +86,45 @@ export type Database = {
           },
         ]
       }
+      intros: {
+        Row: {
+          agent_id: string
+          buyer_id: string
+          created_at: string | null
+          id: string
+          type: string
+        }
+        Insert: {
+          agent_id: string
+          buyer_id: string
+          created_at?: string | null
+          id?: string
+          type: string
+        }
+        Update: {
+          agent_id?: string
+          buyer_id?: string
+          created_at?: string | null
+          id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intros_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intros_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       likes: {
         Row: {
           created_at: string | null
