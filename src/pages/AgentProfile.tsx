@@ -7,7 +7,8 @@ import { BottomNav } from '@/components/BottomNav';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageCircle } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { MessageCircle, Coffee, Video } from 'lucide-react';
 
 interface AgentData {
   id: string;
@@ -38,6 +39,8 @@ export default function AgentProfile() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [showCoffeeDialog, setShowCoffeeDialog] = useState(false);
+  const [showVideoDialog, setShowVideoDialog] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -208,6 +211,29 @@ export default function AgentProfile() {
             </Button>
           </div>
 
+          {profile?.id !== id && (
+            <div className="flex gap-2 pt-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                size="lg"
+                onClick={() => setShowCoffeeDialog(true)}
+              >
+                <Coffee className="mr-2 h-5 w-5" />
+                Coffee Chat
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                size="lg"
+                onClick={() => setShowVideoDialog(true)}
+              >
+                <Video className="mr-2 h-5 w-5" />
+                Video Call
+              </Button>
+            </div>
+          )}
+
           <p className="text-sm">
             {agent.bio}
           </p>
@@ -264,6 +290,34 @@ export default function AgentProfile() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <Dialog open={showCoffeeDialog} onOpenChange={setShowCoffeeDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Coffee Chat Request</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-muted-foreground">
+              Request a buyer consultation / coffee meeting with {agent?.first_name} {agent?.last_name}. Coming soon.
+            </p>
+          </div>
+          <Button onClick={() => setShowCoffeeDialog(false)}>Close</Button>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showVideoDialog} onOpenChange={setShowVideoDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Video Call Request</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-muted-foreground">
+              Request a video call with {agent?.first_name} {agent?.last_name}. Coming soon.
+            </p>
+          </div>
+          <Button onClick={() => setShowVideoDialog(false)}>Close</Button>
+        </DialogContent>
+      </Dialog>
 
       <BottomNav />
     </div>

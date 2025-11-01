@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { AppHeader } from '@/components/AppHeader';
 import { BottomNav } from '@/components/BottomNav';
 import { Input } from '@/components/ui/input';
@@ -15,17 +16,19 @@ interface Agent {
   role: string;
   city: string;
   profile_photo_url: string;
+  isFollowing?: boolean;
 }
 
 export default function Search() {
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadAgents();
-  }, []);
+  }, [profile?.id]);
 
   const loadAgents = async () => {
     try {
@@ -36,11 +39,59 @@ export default function Search() {
         .order('first_name');
 
       if (error) throw error;
-      setAgents(data || []);
+
+      // Check which agents the current user is following
+      const agentsWithFollowStatus = await Promise.all((data || []).map(async (agent) => {
+        if (!profile?.id) return { ...agent, isFollowing: false };
+
+        const { data: followData } = await supabase
+          .from('follows')
+          .select('*')
+          .eq('follower_id', profile.id)
+          .eq('following_id', agent.id)
+          .maybeSingle();
+
+        return { ...agent, isFollowing: !!followData };
+      }));
+
+      setAgents(agentsWithFollowStatus);
     } catch (error) {
       console.error('Error loading agents:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFollowToggle = async (agentId: string, currentlyFollowing: boolean) => {
+    if (!profile?.id) return;
+
+    try {
+      if (currentlyFollowing) {
+        // Unfollow
+        await supabase
+          .from('follows')
+          .delete()
+          .eq('follower_id', profile.id)
+          .eq('following_id', agentId);
+      } else {
+        // Follow
+        await supabase
+          .from('follows')
+          .insert({
+            follower_id: profile.id,
+            following_id: agentId,
+          });
+      }
+
+      // Update local state
+      setAgents(agents.map(agent => {
+        if (agent.id === agentId) {
+          return { ...agent, isFollowing: !currentlyFollowing };
+        }
+        return agent;
+      }));
+    } catch (error) {
+      console.error('Error toggling follow:', error);
     }
   };
 
@@ -82,20 +133,31 @@ export default function Search() {
           {filteredAgents.map((agent) => (
             <div
               key={agent.id}
-              onClick={() => navigate(`/agent/${agent.id}`)}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent cursor-pointer"
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent"
             >
-              <Avatar className="h-12 w-12">
-                <AvatarImage src={agent.profile_photo_url} alt={`${agent.first_name} ${agent.last_name}`} />
-                <AvatarFallback>{agent.first_name[0]}{agent.last_name[0]}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold">{agent.first_name} {agent.last_name}</p>
-                <p className="text-sm text-muted-foreground">Real Estate Agent</p>
-                <p className="text-sm text-muted-foreground">{agent.city}</p>
+              <div 
+                className="flex items-center gap-3 flex-1 cursor-pointer"
+                onClick={() => navigate(`/agent/${agent.id}`)}
+              >
+                <Avatar className="h-12 w-12">
+                  <AvatarImage src={agent.profile_photo_url} alt={`${agent.first_name} ${agent.last_name}`} />
+                  <AvatarFallback>{agent.first_name[0]}{agent.last_name[0]}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold">{agent.first_name} {agent.last_name}</p>
+                  <p className="text-sm text-muted-foreground">Real Estate Agent</p>
+                  <p className="text-sm text-muted-foreground">{agent.city}</p>
+                </div>
               </div>
-              <Button variant="default" size="sm">
-                Follow
+              <Button 
+                variant={agent.isFollowing ? "outline" : "default"} 
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleFollowToggle(agent.id, agent.isFollowing || false);
+                }}
+              >
+                {agent.isFollowing ? 'Following' : 'Follow'}
               </Button>
             </div>
           ))}
