@@ -49,37 +49,6 @@ export default function NewPost() {
       return;
     }
 
-    // Check if user is an agent when creating Daily
-    if (postType === 'daily' && profile.role !== 'Agent') {
-      toast({
-        title: "Agents only",
-        description: "Only agents can post Daily's.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Check if agent already has a Daily in last 24 hours
-    if (postType === 'daily') {
-      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const { data: recentDaily } = await supabase
-        .from('posts')
-        .select('id')
-        .eq('user_id', profile.id)
-        .eq('is_daily', true)
-        .gte('created_at', twentyFourHoursAgo)
-        .maybeSingle();
-
-      if (recentDaily) {
-        toast({
-          title: "Daily limit reached",
-          description: "You've already posted your Daily. You can post another in 24 hours.",
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-
     setIsSubmitting(true);
     
     try {
@@ -90,7 +59,6 @@ export default function NewPost() {
           user_id: profile.id,
           photo_url: postType === 'photo' ? imageUrl.trim() : '',
           caption: caption.trim(),
-          is_daily: postType === 'daily',
         });
 
       if (error) throw error;
@@ -126,16 +94,14 @@ export default function NewPost() {
             >
               Photo Post
             </Button>
-            {profile?.role === 'Agent' && (
-              <Button
-                type="button"
-                variant={postType === 'daily' ? 'default' : 'outline'}
-                className="flex-1"
-                onClick={() => setPostType('daily')}
-              >
-                Daily Update
-              </Button>
-            )}
+            <Button
+              type="button"
+              variant={postType === 'daily' ? 'default' : 'outline'}
+              className="flex-1"
+              onClick={() => setPostType('daily')}
+            >
+              Daily Update
+            </Button>
           </div>
 
           {postType === 'photo' && (

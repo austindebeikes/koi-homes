@@ -22,9 +22,7 @@ interface Post {
   photo_url: string;
   caption: string;
   created_at: string;
-  is_daily: boolean;
   users: {
-    id: string;
     first_name: string;
     last_name: string;
     role: string;
@@ -58,7 +56,6 @@ export default function Feed() {
         .select(`
           *,
           users:user_id (
-            id,
             first_name,
             last_name,
             role,
@@ -162,14 +159,9 @@ export default function Feed() {
 
   const filteredPosts = posts.filter(post => {
     if (activeTab === 'photos') {
-      // Show only regular posts (not Daily's)
-      return post.is_daily === false;
+      return post.photo_url && post.photo_url.trim() !== '';
     } else {
-      // Show only Daily's that are less than 24 hours old
-      if (post.is_daily !== true) return false;
-      const postAge = Date.now() - new Date(post.created_at).getTime();
-      const twentyFourHours = 24 * 60 * 60 * 1000;
-      return postAge < twentyFourHours;
+      return !post.photo_url || post.photo_url.trim() === '';
     }
   });
 
@@ -232,69 +224,44 @@ export default function Feed() {
               )}
 
               <div className="p-4 space-y-2">
-                {activeTab === 'photos' ? (
-                  <>
-                    <div className="flex gap-4">
-                      <button 
-                        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleLikeToggle(post.id, post.isLiked || false);
-                        }}
-                      >
-                        <Heart className={`h-6 w-6 ${post.isLiked ? 'fill-red-500 text-red-500' : ''}`} />
-                        <span className="text-sm font-semibold">{post.likeCount || 0}</span>
-                      </button>
-                      <button 
-                        className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
-                        onClick={() => navigate(`/post/${post.id}`)}
-                      >
-                        <MessageCircle className="h-6 w-6" />
-                      </button>
-                    </div>
+                <div className="flex gap-4">
+                  <button 
+                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleLikeToggle(post.id, post.isLiked || false);
+                    }}
+                  >
+                    <Heart className={`h-6 w-6 ${post.isLiked ? 'fill-red-500 text-red-500' : ''}`} />
+                    <span className="text-sm font-semibold">{post.likeCount || 0}</span>
+                  </button>
+                  <button 
+                    className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
+                    onClick={() => navigate(`/post/${post.id}`)}
+                  >
+                    <MessageCircle className="h-6 w-6" />
+                  </button>
+                </div>
 
-                    {post.caption && (
-                      <p className="text-sm">
-                        <span className="font-semibold">{post.users.first_name} {post.users.last_name}</span> {post.caption}
-                      </p>
-                    )}
-
-                    {post.comments && post.comments.length > 0 && (
-                      <div className="space-y-1 pt-1">
-                        {post.comments.slice(0, 2).map((comment) => (
-                          <p key={comment.id} className="text-sm text-muted-foreground">
-                            <span className="font-semibold text-foreground">{comment.users.first_name}</span> {comment.body}
-                          </p>
-                        ))}
-                      </div>
-                    )}
-
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(post.created_at).toLocaleDateString()}
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    {/* Daily's view - no comments, just Message button */}
-                    {post.caption && (
-                      <p className="text-sm">
-                        <span className="font-semibold">{post.users.first_name} {post.users.last_name}</span> {post.caption}
-                      </p>
-                    )}
-                    
-                    <button 
-                      className="w-full mt-2 py-2 px-4 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
-                      onClick={() => navigate(`/chat/${post.users.id}`)}
-                    >
-                      <MessageCircle className="inline-block h-4 w-4 mr-2" />
-                      Message Agent
-                    </button>
-
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(post.created_at).toLocaleDateString()}
-                    </p>
-                  </>
+                {post.caption && (
+                  <p className="text-sm">
+                    <span className="font-semibold">{post.users.first_name} {post.users.last_name}</span> {post.caption}
+                  </p>
                 )}
+
+                {post.comments && post.comments.length > 0 && (
+                  <div className="space-y-1 pt-1">
+                    {post.comments.slice(0, 2).map((comment) => (
+                      <p key={comment.id} className="text-sm text-muted-foreground">
+                        <span className="font-semibold text-foreground">{comment.users.first_name}</span> {comment.body}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+                <p className="text-xs text-muted-foreground">
+                  {new Date(post.created_at).toLocaleDateString()}
+                </p>
               </div>
             </div>
           ))
