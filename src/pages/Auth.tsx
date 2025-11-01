@@ -119,14 +119,16 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background">
       <AppHeader title={isLogin ? "Log in" : "Sign up"} showLogo={false} />
       
-      <div className="max-w-md mx-auto p-6 flex-1">
+      <div className="max-w-md mx-auto p-6">
         {/* Branded Header */}
         <div className="flex flex-col items-center gap-3 mb-8">
-          <img src={koiLogo} alt="koi" className="h-20 w-20" />
-          <h2 className="text-4xl font-koi font-semibold text-primary">koi</h2>
+          <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+            <img src={koiLogo} alt="Koi" className="h-10 w-10" />
+          </div>
+          <h2 className="text-3xl font-bold text-primary">Koi</h2>
           <p className="text-muted-foreground text-center">
             {isLogin ? 'Welcome back' : 'Join the community'}
           </p>
@@ -157,7 +159,7 @@ export default function Auth() {
                 />
               </div>
 
-              <div className="flex items-center space-x-2 p-4 rounded-lg border-2 border-primary/20 bg-primary/5 hover:border-primary transition-colors cursor-pointer">
+              <div className="flex items-center space-x-2 p-4 rounded-lg border-2 border-input hover:border-primary transition-colors cursor-pointer">
                 <Checkbox
                   id="isAgent"
                   checked={isAgent}
@@ -208,11 +210,6 @@ export default function Auth() {
           </button>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="py-6 text-center text-sm text-muted-foreground border-t border-border">
-        © 2025 Koi Homes. All rights reserved.
-      </footer>
     </div>
   );
 }

@@ -74,7 +74,6 @@ export default function EditProfile() {
           onUploadComplete={(url) => setProfilePhoto(url)}
           currentImageUrl={profilePhoto}
           label="Profile Photo"
-          bucketName="profile-photos"
         />
 
         <div className="space-y-2">
