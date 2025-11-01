@@ -10,11 +10,11 @@ export const AppHeader = ({ title, showLogo = true }: AppHeaderProps) => {
     <header className="sticky top-0 z-40 bg-background border-b border-border">
       <div className="max-w-md mx-auto px-4 h-14 flex items-center justify-center">
         {showLogo && (
-          <div className="flex items-center gap-2">
-            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <img src={koiLogo} alt="Koi" className="h-6 w-6" />
+          <div className="flex items-center gap-3">
+            <div className="h-14 w-14 rounded-full bg-primary flex items-center justify-center">
+              <img src={koiLogo} alt="koi" className="h-10 w-10" />
             </div>
-            <h1 className="text-2xl font-bold">Koi</h1>
+            <h1 className="text-3xl font-koi font-semibold text-primary">koi</h1>
           </div>
         )}
         {title && !showLogo && (

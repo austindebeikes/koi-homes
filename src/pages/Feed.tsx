@@ -99,22 +99,31 @@ export default function Feed() {
               <img
                 src={post.photo_url}
                 alt="Post"
-                className="w-full aspect-square object-cover"
+                className="w-full aspect-square object-cover cursor-pointer"
+                onClick={() => navigate(`/post/${post.id}`)}
               />
 
               <div className="p-4 space-y-2">
                 <div className="flex gap-4">
-                  <button className="flex items-center gap-1 text-muted-foreground hover:text-foreground">
+                  <button 
+                    className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
+                    onClick={() => navigate(`/post/${post.id}`)}
+                  >
                     <Heart className="h-6 w-6" />
                   </button>
-                  <button className="flex items-center gap-1 text-muted-foreground hover:text-foreground">
+                  <button 
+                    className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
+                    onClick={() => navigate(`/post/${post.id}`)}
+                  >
                     <MessageCircle className="h-6 w-6" />
                   </button>
                 </div>
 
-                <p className="text-sm">
-                  <span className="font-semibold">{post.users.first_name} {post.users.last_name}</span> {post.caption}
-                </p>
+                {post.caption && (
+                  <p className="text-sm">
+                    <span className="font-semibold">{post.users.first_name} {post.users.last_name}</span> {post.caption}
+                  </p>
+                )}
                 <p className="text-xs text-muted-foreground">
                   {new Date(post.created_at).toLocaleDateString()}
                 </p>

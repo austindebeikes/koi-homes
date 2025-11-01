@@ -136,12 +136,19 @@ export default function Profile() {
             <div className="grid grid-cols-2 gap-1">
               {posts.length > 0 ? (
                 posts.map((post) => (
-                  <img
-                    key={post.id}
-                    src={post.photo_url}
-                    alt={post.caption || 'Post'}
-                    className="w-full aspect-square object-cover rounded"
-                  />
+                  <div key={post.id} className="relative group">
+                    <img
+                      src={post.photo_url}
+                      alt={post.caption || 'Post'}
+                      className="w-full aspect-square object-cover rounded cursor-pointer"
+                      onClick={() => navigate(`/post/${post.id}`)}
+                    />
+                    {post.caption && (
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2 rounded">
+                        <p className="text-white text-xs line-clamp-2">{post.caption}</p>
+                      </div>
+                    )}
+                  </div>
                 ))
               ) : (
                 <p className="col-span-2 text-center text-muted-foreground py-8">

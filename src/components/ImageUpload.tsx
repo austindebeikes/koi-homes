@@ -10,13 +10,15 @@ interface ImageUploadProps {
   currentImageUrl?: string;
   label?: string;
   className?: string;
+  bucketName: string;
 }
 
 export const ImageUpload = ({ 
   onUploadComplete, 
   currentImageUrl, 
   label = "Photo",
-  className = "" 
+  className = "",
+  bucketName
 }: ImageUploadProps) => {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
@@ -60,7 +62,7 @@ export const ImageUpload = ({
 
       // Upload to Supabase Storage
       const { data, error } = await supabase.storage
-        .from('photos')
+        .from(bucketName)
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false
@@ -70,7 +72,7 @@ export const ImageUpload = ({
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('photos')
+        .from(bucketName)
         .getPublicUrl(data.path);
 
       setPreviewUrl(publicUrl);
@@ -150,7 +152,6 @@ export const ImageUpload = ({
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        capture="environment"
         onChange={handleFileSelect}
         className="hidden"
       />
