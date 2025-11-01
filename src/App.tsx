@@ -14,6 +14,7 @@ import Profile from "./pages/Profile";
 import AgentProfile from "./pages/AgentProfile";
 import EditProfile from "./pages/EditProfile";
 import NewPost from "./pages/NewPost";
+import PostDetail from "./pages/PostDetail";
 import Likes from "./pages/Likes";
 import NotFound from "./pages/NotFound";
 
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/agent/:id" element={<AgentProfile />} />
             <Route path="/profile/edit" element={<EditProfile />} />
             <Route path="/post/new" element={<NewPost />} />
+            <Route path="/post/:id" element={<PostDetail />} />
             <Route path="/likes" element={<Likes />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
