@@ -129,6 +129,14 @@ export default function Search() {
           />
         </div>
 
+        {/* Map placeholder */}
+        <div className="w-full h-48 bg-secondary rounded-lg flex items-center justify-center border border-border">
+          <div className="text-center p-4">
+            <p className="text-sm text-muted-foreground mb-2">📍 Agent Map View</p>
+            <p className="text-xs text-muted-foreground">Interactive map coming soon</p>
+          </div>
+        </div>
+
         <div className="space-y-3">
           {filteredAgents.map((agent) => (
             <div

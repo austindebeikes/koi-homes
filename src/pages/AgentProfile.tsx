@@ -66,6 +66,7 @@ export default function AgentProfile() {
         .from('posts')
         .select('*')
         .eq('user_id', id)
+        .eq('is_daily', false) // Exclude Daily's from profile gallery
         .order('created_at', { ascending: false });
 
       if (postsError) throw postsError;
@@ -309,11 +310,21 @@ export default function AgentProfile() {
 
           <TabsContent value="services" className="p-4">
             <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">First-time buyers</span>
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">VA loans</span>
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">Relocation</span>
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">Off-market deals</span>
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">Coastal expert</span>
+              <span className="px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium flex items-center gap-1.5">
+                <span>🏡</span> First-time buyers
+              </span>
+              <span className="px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium flex items-center gap-1.5">
+                <span>🎖️</span> VA loans
+              </span>
+              <span className="px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium flex items-center gap-1.5">
+                <span>✈️</span> Relocation
+              </span>
+              <span className="px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium flex items-center gap-1.5">
+                <span>🔑</span> Off-market deals
+              </span>
+              <span className="px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium flex items-center gap-1.5">
+                <span>🌴</span> Coastal expert
+              </span>
             </div>
           </TabsContent>
         </Tabs>
