@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
-import koiLogo from '@/assets/koi-logo.png';
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -19,8 +18,7 @@ const Index = () => {
   }, [user, loading, navigate]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background">
-      <img src={koiLogo} alt="Koi" className="h-16 w-16 mb-8" />
+    <div className="flex min-h-screen items-center justify-center bg-background">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
   );
