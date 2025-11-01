@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { AppHeader } from '@/components/AppHeader';
 import { BottomNav } from '@/components/BottomNav';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -30,15 +31,21 @@ interface Post {
 export default function AgentProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const [agent, setAgent] = useState<AgentData | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
 
   useEffect(() => {
     if (id) {
       loadAgentData();
+      loadFollowCounts();
+      checkIfFollowing();
     }
-  }, [id]);
+  }, [id, profile?.id]);
 
     const loadAgentData = async () => {
       try {
@@ -63,6 +70,69 @@ export default function AgentProfile() {
       console.error('Error loading agent data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadFollowCounts = async () => {
+    if (!id) return;
+
+    // Get follower count
+    const { count: followersCount } = await supabase
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('following_id', id);
+
+    // Get following count
+    const { count: followingCountData } = await supabase
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('follower_id', id);
+
+    setFollowerCount(followersCount || 0);
+    setFollowingCount(followingCountData || 0);
+  };
+
+  const checkIfFollowing = async () => {
+    if (!profile?.id || !id) return;
+
+    const { data } = await supabase
+      .from('follows')
+      .select('*')
+      .eq('follower_id', profile.id)
+      .eq('following_id', id)
+      .maybeSingle();
+
+    setIsFollowing(!!data);
+  };
+
+  const handleFollowToggle = async () => {
+    if (!profile?.id || !id) return;
+
+    try {
+      if (isFollowing) {
+        // Unfollow
+        await supabase
+          .from('follows')
+          .delete()
+          .eq('follower_id', profile.id)
+          .eq('following_id', id);
+
+        setIsFollowing(false);
+        setFollowerCount(prev => Math.max(0, prev - 1));
+      } else {
+        // Follow
+        await supabase
+          .from('follows')
+          .insert({
+            follower_id: profile.id,
+            following_id: id,
+          });
+
+        setIsFollowing(true);
+        setFollowerCount(prev => prev + 1);
+      }
+    } catch (error) {
+      console.error('Error toggling follow:', error);
     }
   };
 
@@ -117,14 +187,26 @@ export default function AgentProfile() {
             </div>
           </div>
 
-          <Button 
-            className="w-full" 
-            size="lg"
-            onClick={() => navigate(`/chat/${agent.id}`)}
-          >
-            <MessageCircle className="mr-2 h-5 w-5" />
-            Message
-          </Button>
+          <div className="flex gap-2">
+            {profile?.id !== id && (
+              <Button
+                variant={isFollowing ? "outline" : "default"}
+                className="flex-1"
+                size="lg"
+                onClick={handleFollowToggle}
+              >
+                {isFollowing ? 'Following' : 'Follow'}
+              </Button>
+            )}
+            <Button 
+              className="flex-1" 
+              size="lg"
+              onClick={() => navigate(`/chat/${agent.id}`)}
+            >
+              <MessageCircle className="mr-2 h-5 w-5" />
+              Message
+            </Button>
+          </div>
 
           <p className="text-sm">
             {agent.bio}
@@ -136,11 +218,11 @@ export default function AgentProfile() {
               <p className="text-sm text-muted-foreground">Posts</p>
             </div>
             <div>
-              <p className="font-bold text-lg">{agent.followers_count}</p>
+              <p className="font-bold text-lg">{followerCount}</p>
               <p className="text-sm text-muted-foreground">Followers</p>
             </div>
             <div>
-              <p className="font-bold text-lg">{agent.following_count}</p>
+              <p className="font-bold text-lg">{followingCount}</p>
               <p className="text-sm text-muted-foreground">Following</p>
             </div>
           </div>
@@ -161,7 +243,8 @@ export default function AgentProfile() {
                     key={post.id}
                     src={post.photo_url}
                     alt={post.caption || 'Post'}
-                    className="w-full aspect-square object-cover rounded"
+                    className="w-full aspect-square object-cover rounded cursor-pointer"
+                    onClick={() => navigate(`/post/${post.id}`)}
                   />
                 ))
               ) : (

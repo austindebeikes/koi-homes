@@ -13,10 +13,13 @@ export default function Profile() {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
   const [posts, setPosts] = useState<any[]>([]);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
 
   useEffect(() => {
     if (profile?.id) {
       loadPosts();
+      loadFollowCounts();
     }
   }, [profile?.id]);
 
@@ -35,6 +38,25 @@ export default function Profile() {
     }
     
     setPosts(data || []);
+  };
+
+  const loadFollowCounts = async () => {
+    if (!profile?.id) return;
+
+    // Get follower count
+    const { count: followersCount } = await supabase
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('following_id', profile.id);
+
+    // Get following count
+    const { count: followingCountData } = await supabase
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('follower_id', profile.id);
+
+    setFollowerCount(followersCount || 0);
+    setFollowingCount(followingCountData || 0);
   };
 
   const handleSignOut = async () => {
@@ -111,11 +133,11 @@ export default function Profile() {
               <p className="text-sm text-muted-foreground">Posts</p>
             </div>
             <div>
-              <p className="font-bold text-lg">{profile.followers_count}</p>
+              <p className="font-bold text-lg">{followerCount}</p>
               <p className="text-sm text-muted-foreground">Followers</p>
             </div>
             <div>
-              <p className="font-bold text-lg">{profile.following_count}</p>
+              <p className="font-bold text-lg">{followingCount}</p>
               <p className="text-sm text-muted-foreground">Following</p>
             </div>
           </div>

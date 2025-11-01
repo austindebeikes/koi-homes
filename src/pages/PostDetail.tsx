@@ -3,10 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { AppHeader } from '@/components/AppHeader';
+import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Heart, Send } from 'lucide-react';
+import { Heart, Send, ArrowLeft } from 'lucide-react';
 
 interface Post {
   id: string;
@@ -181,8 +182,21 @@ export default function PostDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-6">
+    <div className="min-h-screen bg-background pb-20">
       <AppHeader title="Post" showLogo={false} />
+      
+      {/* Back Button */}
+      <div className="max-w-2xl mx-auto px-4 pt-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+      </div>
 
       <div className="max-w-2xl mx-auto p-4">
         {/* Post Image */}
@@ -192,8 +206,11 @@ export default function PostDetail() {
           className="w-full aspect-square object-cover rounded-lg mb-4"
         />
 
-        {/* User Info */}
-        <div className="flex items-center gap-3 mb-4">
+        {/* User Info - Clickable */}
+        <div 
+          className="flex items-center gap-3 mb-4 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={() => navigate(`/agent/${post.users.id}`)}
+        >
           <Avatar>
             <AvatarImage src={post.users.profile_photo_url} />
             <AvatarFallback>
@@ -276,6 +293,8 @@ export default function PostDetail() {
           </div>
         </div>
       </div>
+
+      <BottomNav />
     </div>
   );
 }
