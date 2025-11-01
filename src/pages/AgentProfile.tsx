@@ -6,7 +6,9 @@ import { BottomNav } from '@/components/BottomNav';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, UserPlus, UserMinus } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { PostDetail } from '@/components/PostDetail';
 
 interface AgentData {
   id: string;
@@ -29,16 +31,63 @@ interface Post {
 
 export default function AgentProfile() {
   const { id } = useParams();
+  const { profile } = useAuth();
   const navigate = useNavigate();
   const [agent, setAgent] = useState<AgentData | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (id) {
+    if (id && profile?.id) {
       loadAgentData();
+      checkFollowStatus();
     }
-  }, [id]);
+  }, [id, profile?.id]);
+
+  const checkFollowStatus = async () => {
+    if (!profile?.id || !id) return;
+
+    const { data } = await supabase
+      .from('follows')
+      .select('*')
+      .eq('follower_id', profile.id)
+      .eq('following_id', id)
+      .maybeSingle();
+
+    setIsFollowing(!!data);
+  };
+
+  const handleFollowToggle = async () => {
+    if (!profile?.id || !id) return;
+
+    try {
+      if (isFollowing) {
+        await supabase
+          .from('follows')
+          .delete()
+          .eq('follower_id', profile.id)
+          .eq('following_id', id);
+        
+        setIsFollowing(false);
+      } else {
+        await supabase
+          .from('follows')
+          .insert({
+            follower_id: profile.id,
+            following_id: id,
+          });
+        
+        setIsFollowing(true);
+      }
+      
+      // Reload agent data to update counts
+      loadAgentData();
+    } catch (error) {
+      console.error('Error toggling follow:', error);
+    }
+  };
 
     const loadAgentData = async () => {
       try {
@@ -117,14 +166,35 @@ export default function AgentProfile() {
             </div>
           </div>
 
-          <Button 
-            className="w-full" 
-            size="lg"
-            onClick={() => navigate(`/chat/${agent.id}`)}
-          >
-            <MessageCircle className="mr-2 h-5 w-5" />
-            Message
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              className="flex-1" 
+              size="lg"
+              variant={isFollowing ? "outline" : "default"}
+              onClick={handleFollowToggle}
+            >
+              {isFollowing ? (
+                <>
+                  <UserMinus className="mr-2 h-5 w-5" />
+                  Following
+                </>
+              ) : (
+                <>
+                  <UserPlus className="mr-2 h-5 w-5" />
+                  Follow
+                </>
+              )}
+            </Button>
+            <Button 
+              className="flex-1" 
+              size="lg"
+              variant="outline"
+              onClick={() => navigate(`/chat/${agent.id}`)}
+            >
+              <MessageCircle className="mr-2 h-5 w-5" />
+              Message
+            </Button>
+          </div>
 
           <p className="text-sm">
             {agent.bio}
@@ -157,12 +227,22 @@ export default function AgentProfile() {
             <div className="grid grid-cols-2 gap-1">
               {posts.length > 0 ? (
                 posts.map((post) => (
-                  <img
+                  <div 
                     key={post.id}
-                    src={post.photo_url}
-                    alt={post.caption || 'Post'}
-                    className="w-full aspect-square object-cover rounded"
-                  />
+                    className="cursor-pointer"
+                    onClick={() => setSelectedPostId(post.id)}
+                  >
+                    <img
+                      src={post.photo_url}
+                      alt={post.caption || 'Post'}
+                      className="w-full aspect-square object-cover rounded"
+                    />
+                    {post.caption && (
+                      <p className="text-xs mt-1 px-1 truncate text-muted-foreground">
+                        {post.caption}
+                      </p>
+                    )}
+                  </div>
                 ))
               ) : (
                 <p className="col-span-2 text-center text-muted-foreground py-8">
@@ -183,6 +263,14 @@ export default function AgentProfile() {
       </div>
 
       <BottomNav />
+      
+      {selectedPostId && (
+        <PostDetail
+          postId={selectedPostId}
+          open={!!selectedPostId}
+          onOpenChange={(open) => !open && setSelectedPostId(null)}
+        />
+      )}
     </div>
   );
 }
