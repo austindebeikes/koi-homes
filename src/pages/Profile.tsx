@@ -8,13 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
-import { PostDetail } from '@/components/PostDetail';
 
 export default function Profile() {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
   const [posts, setPosts] = useState<any[]>([]);
-  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
 
   useEffect(() => {
     if (profile?.id) {
@@ -138,22 +136,12 @@ export default function Profile() {
             <div className="grid grid-cols-2 gap-1">
               {posts.length > 0 ? (
                 posts.map((post) => (
-                  <div 
-                    key={post.id} 
-                    className="cursor-pointer"
-                    onClick={() => setSelectedPostId(post.id)}
-                  >
-                    <img
-                      src={post.photo_url}
-                      alt={post.caption || 'Post'}
-                      className="w-full aspect-square object-cover rounded"
-                    />
-                    {post.caption && (
-                      <p className="text-xs mt-1 px-1 truncate text-muted-foreground">
-                        {post.caption}
-                      </p>
-                    )}
-                  </div>
+                  <img
+                    key={post.id}
+                    src={post.photo_url}
+                    alt={post.caption || 'Post'}
+                    className="w-full aspect-square object-cover rounded"
+                  />
                 ))
               ) : (
                 <p className="col-span-2 text-center text-muted-foreground py-8">
@@ -174,14 +162,6 @@ export default function Profile() {
       </div>
 
       <BottomNav />
-      
-      {selectedPostId && (
-        <PostDetail
-          postId={selectedPostId}
-          open={!!selectedPostId}
-          onOpenChange={(open) => !open && setSelectedPostId(null)}
-        />
-      )}
     </div>
   );
 }

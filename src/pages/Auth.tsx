@@ -125,12 +125,10 @@ export default function Auth() {
       <div className="max-w-md mx-auto p-6">
         {/* Branded Header */}
         <div className="flex flex-col items-center gap-3 mb-8">
-          <img 
-            src={koiLogo} 
-            alt="koi" 
-            className="h-16 w-auto object-contain"
-          />
-          <h2 className="text-4xl font-koi font-bold text-primary">koi</h2>
+          <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+            <img src={koiLogo} alt="Koi" className="h-10 w-10" />
+          </div>
+          <h2 className="text-3xl font-bold text-primary">Koi</h2>
           <p className="text-muted-foreground text-center">
             {isLogin ? 'Welcome back' : 'Join the community'}
           </p>
@@ -161,14 +159,13 @@ export default function Auth() {
                 />
               </div>
 
-              <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent transition-colors">
+              <div className="flex items-center space-x-2 p-4 rounded-lg border-2 border-input hover:border-primary transition-colors cursor-pointer">
                 <Checkbox
                   id="isAgent"
                   checked={isAgent}
                   onCheckedChange={(checked) => setIsAgent(checked as boolean)}
-                  className="border-primary data-[state=checked]:bg-primary"
                 />
-                <Label htmlFor="isAgent" className="cursor-pointer font-medium flex-1">
+                <Label htmlFor="isAgent" className="cursor-pointer font-medium">
                   I'm a Real Estate Agent
                 </Label>
               </div>
