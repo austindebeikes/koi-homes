@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { Footer } from "./components/Footer";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Feed from "./pages/Feed";
@@ -26,21 +27,26 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/feed" element={<Feed />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/messages" element={<Messages />} />
-            <Route path="/chat/:id" element={<Chat />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/agent/:id" element={<AgentProfile />} />
-            <Route path="/profile/edit" element={<EditProfile />} />
-            <Route path="/post/new" element={<NewPost />} />
-            <Route path="/likes" element={<Likes />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <div className="flex flex-col min-h-screen">
+            <div className="flex-1">
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/feed" element={<Feed />} />
+                <Route path="/search" element={<Search />} />
+                <Route path="/messages" element={<Messages />} />
+                <Route path="/chat/:id" element={<Chat />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/agent/:id" element={<AgentProfile />} />
+                <Route path="/profile/edit" element={<EditProfile />} />
+                <Route path="/post/new" element={<NewPost />} />
+                <Route path="/likes" element={<Likes />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </div>
+            <Footer />
+          </div>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
