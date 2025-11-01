@@ -84,6 +84,7 @@ export default function NewPost() {
             onUploadComplete={(url) => setImageUrl(url)}
             currentImageUrl={imageUrl}
             label="Post Photo"
+            bucketName="post-photos"
           />
 
           <div className="space-y-2">
