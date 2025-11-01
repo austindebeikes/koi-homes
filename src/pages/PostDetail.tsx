@@ -6,7 +6,6 @@ import { AppHeader } from '@/components/AppHeader';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useToast } from '@/hooks/use-toast';
 import { Heart, Send } from 'lucide-react';
 
 interface Post {
@@ -40,7 +39,6 @@ export default function PostDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { profile } = useAuth();
-  const { toast } = useToast();
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [likeCount, setLikeCount] = useState(0);
@@ -69,17 +67,17 @@ export default function PostDetail() {
 
       // Load comments
       const { data: commentsData, error: commentsError } = await supabase
-        .from('comments' as any)
+        .from('comments')
         .select('*, users(first_name, last_name, profile_photo_url)')
         .eq('post_id', id)
         .order('created_at', { ascending: false });
 
       if (commentsError) throw commentsError;
-      setComments((commentsData as any) || []);
+      setComments(commentsData || []);
 
       // Load likes count
       const { count, error: likesCountError } = await supabase
-        .from('likes' as any)
+        .from('likes')
         .select('*', { count: 'exact', head: true })
         .eq('post_id', id);
 
@@ -89,7 +87,7 @@ export default function PostDetail() {
       // Check if current user liked
       if (profile?.id) {
         const { data: userLike, error: userLikeError } = await supabase
-          .from('likes' as any)
+          .from('likes')
           .select('id')
           .eq('post_id', id)
           .eq('user_id', profile.id)
@@ -99,31 +97,20 @@ export default function PostDetail() {
         setIsLiked(!!userLike);
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load post",
-        variant: "destructive",
-      });
+      console.error('Error loading post:', error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleLikeToggle = async () => {
-    if (!profile?.id) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to like posts",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!profile?.id) return;
 
     try {
       if (isLiked) {
         // Unlike
         const { error } = await supabase
-          .from('likes' as any)
+          .from('likes')
           .delete()
           .eq('post_id', id)
           .eq('user_id', profile.id);
@@ -134,7 +121,7 @@ export default function PostDetail() {
       } else {
         // Like
         const { error } = await supabase
-          .from('likes' as any)
+          .from('likes')
           .insert({ post_id: id, user_id: profile.id });
 
         if (error) throw error;
@@ -142,30 +129,18 @@ export default function PostDetail() {
         setLikeCount(prev => prev + 1);
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update like",
-        variant: "destructive",
-      });
+      console.error('Error toggling like:', error);
     }
   };
 
   const handleCommentSubmit = async () => {
-    if (!profile?.id) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to comment",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    if (!profile?.id) return;
     if (!commentText.trim()) return;
 
     setIsSubmitting(true);
     try {
       const { error } = await supabase
-        .from('comments' as any)
+        .from('comments')
         .insert({
           post_id: id,
           user_id: profile.id,
@@ -176,17 +151,8 @@ export default function PostDetail() {
 
       setCommentText('');
       await loadPostData(); // Refresh to show new comment
-
-      toast({
-        title: "Comment added",
-        description: "Your comment has been posted",
-      });
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to post comment",
-        variant: "destructive",
-      });
+      console.error('Error posting comment:', error);
     } finally {
       setIsSubmitting(false);
     }

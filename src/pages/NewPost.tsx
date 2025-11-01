@@ -56,11 +56,6 @@ export default function NewPost() {
       // Refresh profile to update post count
       await refreshProfile();
 
-      toast({
-        title: "Post created!",
-        description: "Your new post has been added to your profile.",
-      });
-
       // Navigate back to profile
       navigate('/profile');
     } catch (error: any) {

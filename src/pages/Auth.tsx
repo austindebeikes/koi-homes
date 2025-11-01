@@ -35,11 +35,6 @@ export default function Auth() {
         });
 
         if (error) throw error;
-
-        toast({
-          title: "Welcome back!",
-          description: "You've been logged in successfully.",
-        });
       } else {
         // Sign up flow
         const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -99,11 +94,6 @@ export default function Auth() {
 
         // Refresh profile in context so the app has the latest data
         await refreshProfile?.();
-
-        toast({
-          title: "Account created!",
-          description: "Welcome to Koi!",
-        });
       }
 
       navigate('/');

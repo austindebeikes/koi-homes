@@ -40,12 +40,6 @@ export default function EditProfile() {
       if (error) throw error;
 
       await refreshProfile();
-
-      toast({
-        title: "Profile updated!",
-        description: "Your changes have been saved.",
-      });
-
       navigate('/profile');
     } catch (error: any) {
       toast({
