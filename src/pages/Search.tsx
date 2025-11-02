@@ -155,16 +155,18 @@ export default function Search() {
                   <p className="text-sm text-muted-foreground">{agent.city}</p>
                 </div>
               </div>
-              <Button 
-                variant={agent.isFollowing ? "outline" : "default"} 
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleFollowToggle(agent.id, agent.isFollowing || false);
-                }}
-              >
-                {agent.isFollowing ? 'Following' : 'Follow'}
-              </Button>
+              {agent.id !== profile?.id && (
+                <Button 
+                  variant={agent.isFollowing ? "outline" : "default"} 
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleFollowToggle(agent.id, agent.isFollowing || false);
+                  }}
+                >
+                  {agent.isFollowing ? 'Following' : 'Follow'}
+                </Button>
+              )}
             </div>
           ))}
         </div>

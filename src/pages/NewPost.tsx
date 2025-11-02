@@ -49,6 +49,41 @@ export default function NewPost() {
       return;
     }
 
+    // Check if user is agent for daily posts
+    if (postType === 'daily' && profile.role !== 'Agent') {
+      toast({
+        title: "Not allowed",
+        description: "Only agents can create Daily updates.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check for existing daily in last 24 hours
+    if (postType === 'daily') {
+      const { data: existingDaily } = await supabase
+        .from('posts')
+        .select('id, created_at')
+        .eq('user_id', profile.id)
+        .eq('is_daily', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existingDaily) {
+        const postAge = Date.now() - new Date(existingDaily.created_at).getTime();
+        const hoursSincePost = postAge / (1000 * 60 * 60);
+        if (hoursSincePost < 24) {
+          toast({
+            title: "Daily already posted",
+            description: "You've already posted your Daily. You can post another in 24 hours.",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+    }
+
     setIsSubmitting(true);
     
     try {
@@ -59,9 +94,15 @@ export default function NewPost() {
           user_id: profile.id,
           photo_url: postType === 'photo' ? imageUrl.trim() : '',
           caption: caption.trim(),
+          is_daily: postType === 'daily',
         });
 
       if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: postType === 'daily' ? "Your Daily has been posted." : "Your snapshot has been posted.",
+      });
 
       // Refresh profile to update post count
       await refreshProfile();
@@ -85,24 +126,26 @@ export default function NewPost() {
 
       <div className="max-w-md mx-auto p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant={postType === 'photo' ? 'default' : 'outline'}
-              className="flex-1"
-              onClick={() => setPostType('photo')}
-            >
-              Photo Post
-            </Button>
-            <Button
-              type="button"
-              variant={postType === 'daily' ? 'default' : 'outline'}
-              className="flex-1"
-              onClick={() => setPostType('daily')}
-            >
-              Daily Update
-            </Button>
-          </div>
+          {profile?.role === 'Agent' && (
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={postType === 'photo' ? 'default' : 'outline'}
+                className="flex-1"
+                onClick={() => setPostType('photo')}
+              >
+                📸 Snapshot
+              </Button>
+              <Button
+                type="button"
+                variant={postType === 'daily' ? 'default' : 'outline'}
+                className="flex-1"
+                onClick={() => setPostType('daily')}
+              >
+                Daily Update
+              </Button>
+            </div>
+          )}
 
           {postType === 'photo' && (
             <ImageUpload

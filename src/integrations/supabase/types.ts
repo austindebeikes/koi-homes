@@ -205,6 +205,7 @@ export type Database = {
           caption: string | null
           created_at: string | null
           id: string
+          is_daily: boolean
           photo_url: string
           user_id: string
         }
@@ -212,6 +213,7 @@ export type Database = {
           caption?: string | null
           created_at?: string | null
           id?: string
+          is_daily?: boolean
           photo_url: string
           user_id: string
         }
@@ -219,12 +221,49 @@ export type Database = {
           caption?: string | null
           created_at?: string | null
           id?: string
+          is_daily?: boolean
           photo_url?: string
           user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_posts: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_posts_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_posts_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
@@ -246,6 +285,7 @@ export type Database = {
           posts_count: number | null
           profile_photo_url: string
           role: string
+          services: Json | null
         }
         Insert: {
           bio?: string | null
@@ -260,6 +300,7 @@ export type Database = {
           posts_count?: number | null
           profile_photo_url: string
           role: string
+          services?: Json | null
         }
         Update: {
           bio?: string | null
@@ -274,6 +315,7 @@ export type Database = {
           posts_count?: number | null
           profile_photo_url?: string
           role?: string
+          services?: Json | null
         }
         Relationships: []
       }

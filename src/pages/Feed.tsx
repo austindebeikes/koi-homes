@@ -4,17 +4,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { AppHeader } from '@/components/AppHeader';
 import { BottomNav } from '@/components/BottomNav';
-import { Heart, MessageCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
-interface Comment {
-  id: string;
-  body: string;
-  users: {
-    first_name: string;
-    last_name: string;
-  };
-}
+import { DailyCard } from '@/components/DailyCard';
+import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import koiLogo from '@/assets/koi-logo.png';
 
 interface Post {
   id: string;
@@ -22,24 +16,25 @@ interface Post {
   photo_url: string;
   caption: string;
   created_at: string;
+  is_daily: boolean;
   users: {
+    id: string;
     first_name: string;
     last_name: string;
     role: string;
     city: string;
     profile_photo_url: string;
   };
-  likeCount?: number;
-  isLiked?: boolean;
-  comments?: Comment[];
+  isSaved?: boolean;
 }
 
 export default function Feed() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'photos' | 'dailys'>('photos');
+  const [activeTab, setActiveTab] = useState<'snapshots' | 'dailys'>('snapshots');
 
   useEffect(() => {
     if (!user) {
@@ -56,6 +51,7 @@ export default function Feed() {
         .select(`
           *,
           users:user_id (
+            id,
             first_name,
             last_name,
             role,
@@ -67,43 +63,26 @@ export default function Feed() {
 
       if (error) throw error;
       
-      // Load likes and comments for each post
-      const postsWithData = await Promise.all((data || []).map(async (post) => {
-        // Get like count
-        const { count: likeCount } = await supabase
-          .from('likes')
-          .select('*', { count: 'exact', head: true })
-          .eq('post_id', post.id);
-
-        // Check if current user liked this post
-        let isLiked = false;
+      // Check saved status for each post
+      const postsWithSaved = await Promise.all((data || []).map(async (post) => {
+        let isSaved = false;
         if (profile?.id) {
-          const { data: userLike } = await supabase
-            .from('likes')
+          const { data: savedPost } = await supabase
+            .from('saved_posts')
             .select('id')
-            .eq('post_id', post.id)
             .eq('user_id', profile.id)
+            .eq('post_id', post.id)
             .maybeSingle();
-          isLiked = !!userLike;
+          isSaved = !!savedPost;
         }
-
-        // Get recent comments
-        const { data: commentsData } = await supabase
-          .from('comments')
-          .select('id, body, users(first_name, last_name)')
-          .eq('post_id', post.id)
-          .order('created_at', { ascending: false })
-          .limit(2);
 
         return {
           ...post,
-          likeCount: likeCount || 0,
-          isLiked,
-          comments: commentsData || [],
+          isSaved,
         };
       }));
 
-      setPosts(postsWithData);
+      setPosts(postsWithSaved);
     } catch (error) {
       console.error('Error loading posts:', error);
     } finally {
@@ -111,22 +90,27 @@ export default function Feed() {
     }
   };
 
-  const handleLikeToggle = async (postId: string, currentlyLiked: boolean) => {
+  const handleSaveToggle = async (postId: string, currentlySaved: boolean) => {
     if (!profile?.id) return;
 
     try {
-      if (currentlyLiked) {
-        // Unlike
+      if (currentlySaved) {
+        // Unsave
         await supabase
-          .from('likes')
+          .from('saved_posts')
           .delete()
           .eq('post_id', postId)
           .eq('user_id', profile.id);
       } else {
-        // Like
+        // Save
         await supabase
-          .from('likes')
+          .from('saved_posts')
           .insert({ post_id: postId, user_id: profile.id });
+        
+        toast({
+          title: "Added to your pond! 🐟",
+          description: "This snapshot has been saved to your collection.",
+        });
       }
 
       // Update local state
@@ -134,14 +118,13 @@ export default function Feed() {
         if (post.id === postId) {
           return {
             ...post,
-            isLiked: !currentlyLiked,
-            likeCount: currentlyLiked ? (post.likeCount || 1) - 1 : (post.likeCount || 0) + 1,
+            isSaved: !currentlySaved,
           };
         }
         return post;
       }));
     } catch (error) {
-      console.error('Error toggling like:', error);
+      console.error('Error toggling save:', error);
     }
   };
 
@@ -158,10 +141,15 @@ export default function Feed() {
   }
 
   const filteredPosts = posts.filter(post => {
-    if (activeTab === 'photos') {
-      return post.photo_url && post.photo_url.trim() !== '';
+    if (activeTab === 'snapshots') {
+      // Snapshots: regular photos that are NOT Daily's
+      return post.photo_url && post.photo_url.trim() !== '' && !post.is_daily;
     } else {
-      return !post.photo_url || post.photo_url.trim() === '';
+      // Daily's: only show Daily's that are less than 24 hours old
+      if (!post.is_daily) return false;
+      const postAge = Date.now() - new Date(post.created_at).getTime();
+      const hoursSincePost = postAge / (1000 * 60 * 60);
+      return hoursSincePost < 24;
     }
   });
 
@@ -172,14 +160,14 @@ export default function Feed() {
       <div className="max-w-md mx-auto">
         <div className="flex gap-2 p-4 border-b border-border">
           <button
-            onClick={() => setActiveTab('photos')}
+            onClick={() => setActiveTab('snapshots')}
             className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
-              activeTab === 'photos'
+              activeTab === 'snapshots'
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
             }`}
           >
-            Photos
+            📸 Snapshots
           </button>
           <button
             onClick={() => setActiveTab('dailys')}
@@ -195,76 +183,80 @@ export default function Feed() {
         {filteredPosts.length === 0 ? (
           <div className="flex items-center justify-center p-6">
             <p className="text-muted-foreground">
-              {activeTab === 'photos' 
-                ? 'No photo posts yet. Follow some agents to see their content!'
+              {activeTab === 'snapshots' 
+                ? 'No snapshots yet. Follow some agents to see their content!'
                 : 'No daily updates yet. Follow some agents to see their content!'}
             </p>
           </div>
         ) : (
-          filteredPosts.map((post) => (
-            <div key={post.id} className="mb-6 border-b border-border pb-4">
-              <div className="flex items-center gap-3 p-4">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={post.users.profile_photo_url} alt={`${post.users.first_name} ${post.users.last_name}`} />
-                  <AvatarFallback>{post.users.first_name[0]}{post.users.last_name[0]}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-semibold text-sm">{post.users.first_name} {post.users.last_name}</p>
-                  <p className="text-xs text-muted-foreground">{post.users.city}</p>
-                </div>
-              </div>
-
-              {post.photo_url && post.photo_url.trim() !== '' && (
-                <img
-                  src={post.photo_url}
-                  alt="Post"
-                  className="w-full aspect-square object-cover cursor-pointer"
-                  onClick={() => navigate(`/post/${post.id}`)}
-                />
-              )}
-
-              <div className="p-4 space-y-2">
-                <div className="flex gap-4">
-                  <button 
-                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleLikeToggle(post.id, post.isLiked || false);
-                    }}
-                  >
-                    <Heart className={`h-6 w-6 ${post.isLiked ? 'fill-red-500 text-red-500' : ''}`} />
-                    <span className="text-sm font-semibold">{post.likeCount || 0}</span>
-                  </button>
-                  <button 
-                    className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
-                    onClick={() => navigate(`/post/${post.id}`)}
-                  >
-                    <MessageCircle className="h-6 w-6" />
-                  </button>
-                </div>
-
-                {post.caption && (
-                  <p className="text-sm">
-                    <span className="font-semibold">{post.users.first_name} {post.users.last_name}</span> {post.caption}
-                  </p>
-                )}
-
-                {post.comments && post.comments.length > 0 && (
-                  <div className="space-y-1 pt-1">
-                    {post.comments.slice(0, 2).map((comment) => (
-                      <p key={comment.id} className="text-sm text-muted-foreground">
-                        <span className="font-semibold text-foreground">{comment.users.first_name}</span> {comment.body}
-                      </p>
-                    ))}
-                  </div>
-                )}
-
-                <p className="text-xs text-muted-foreground">
-                  {new Date(post.created_at).toLocaleDateString()}
-                </p>
-              </div>
+          activeTab === 'dailys' ? (
+            // Daily's view
+            <div className="p-4">
+              {filteredPosts.map((post) => (
+                <DailyCard key={post.id} daily={post} />
+              ))}
             </div>
-          ))
+          ) : (
+            // Snapshots view
+            filteredPosts.map((post) => (
+              <div key={post.id} className="mb-6 border-b border-border pb-4">
+                <div 
+                  className="flex items-center gap-3 p-4 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => {
+                    if (post.users.id === profile?.id) {
+                      navigate('/profile');
+                    } else {
+                      navigate(`/agent/${post.users.id}`);
+                    }
+                  }}
+                >
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={post.users.profile_photo_url} alt={`${post.users.first_name} ${post.users.last_name}`} />
+                    <AvatarFallback>{post.users.first_name[0]}{post.users.last_name[0]}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-semibold text-sm">{post.users.first_name} {post.users.last_name}</p>
+                    <p className="text-xs text-muted-foreground">{post.users.city}</p>
+                  </div>
+                </div>
+
+                {post.photo_url && post.photo_url.trim() !== '' && (
+                  <img
+                    src={post.photo_url}
+                    alt="Post"
+                    className="w-full aspect-square object-cover"
+                  />
+                )}
+
+                <div className="p-4 space-y-3">
+                  {post.caption && (
+                    <p className="text-sm text-foreground">
+                      {post.caption}
+                    </p>
+                  )}
+
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(post.created_at).toLocaleDateString()}
+                    </p>
+                    
+                    <Button
+                      size="sm"
+                      variant={post.isSaved ? "default" : "outline"}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSaveToggle(post.id, post.isSaved || false);
+                      }}
+                      className="gap-2"
+                    >
+                      <img src={koiLogo} alt="Koi" className="h-4 w-4" />
+                      {post.isSaved ? 'In Pond' : 'Add to Pond'}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )
         )}
       </div>
 

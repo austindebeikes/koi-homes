@@ -51,13 +51,13 @@ export default function AgentProfile() {
     }
   }, [id, profile?.id]);
 
-    const loadAgentData = async () => {
-      try {
-        const { data: agentData, error: agentError } = await supabase
-          .from('users')
-          .select('id, first_name, last_name, role, city, profile_photo_url, bio, followers_count, following_count, posts_count')
-          .eq('id', id)
-          .single();
+  const loadAgentData = async () => {
+    try {
+      const { data: agentData, error: agentError } = await supabase
+        .from('users')
+        .select('id, first_name, last_name, role, city, profile_photo_url, bio, followers_count, following_count, posts_count, services')
+        .eq('id', id)
+        .single();
 
       if (agentError) throw agentError;
       setAgent(agentData);
@@ -66,6 +66,7 @@ export default function AgentProfile() {
         .from('posts')
         .select('*')
         .eq('user_id', id)
+        .eq('is_daily', false)
         .order('created_at', { ascending: false });
 
       if (postsError) throw postsError;
@@ -268,7 +269,7 @@ export default function AgentProfile() {
           <div className="flex gap-6 text-center">
             <div>
               <p className="font-bold text-lg">{posts.length}</p>
-              <p className="text-sm text-muted-foreground">Posts</p>
+              <p className="text-sm text-muted-foreground">Snapshots</p>
             </div>
             <div>
               <p className="font-bold text-lg">{followerCount}</p>
@@ -281,13 +282,15 @@ export default function AgentProfile() {
           </div>
         </div>
 
-        <Tabs defaultValue="posts" className="w-full">
+        <Tabs defaultValue="snapshots" className="w-full">
           <TabsList className="w-full">
-            <TabsTrigger value="posts" className="flex-1">Posts</TabsTrigger>
-            <TabsTrigger value="services" className="flex-1">Services</TabsTrigger>
+            <TabsTrigger value="snapshots" className="flex-1">Snapshots</TabsTrigger>
+            {agent.role === 'Agent' && (
+              <TabsTrigger value="services" className="flex-1">Services</TabsTrigger>
+            )}
           </TabsList>
 
-          <TabsContent value="posts" className="p-1">
+          <TabsContent value="snapshots" className="p-1">
             <div className="grid grid-cols-2 gap-1">
               {posts.length > 0 ? (
                 posts.map((post) => (
@@ -295,27 +298,57 @@ export default function AgentProfile() {
                     key={post.id}
                     src={post.photo_url}
                     alt={post.caption || 'Post'}
-                    className="w-full aspect-square object-cover rounded cursor-pointer"
-                    onClick={() => navigate(`/post/${post.id}`)}
+                    className="w-full aspect-square object-cover rounded"
                   />
                 ))
               ) : (
                 <p className="col-span-2 text-center text-muted-foreground py-8">
-                  No posts yet
+                  No snapshots yet
                 </p>
               )}
             </div>
           </TabsContent>
 
-          <TabsContent value="services" className="p-4">
-            <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">First-time buyers</span>
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">VA loans</span>
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">Relocation</span>
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">Off-market deals</span>
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">Coastal expert</span>
-            </div>
-          </TabsContent>
+          {agent.role === 'Agent' && (
+            <TabsContent value="services" className="p-4">
+              <div className="flex flex-wrap gap-2">
+                {((agent as any).services || []).length > 0 ? (
+                  ((agent as any).services || []).map((service: string, index: number) => {
+                    // Get emoji for service
+                    const getEmoji = (service: string) => {
+                      const serviceEmojis: { [key: string]: string } = {
+                        'First-time buyers': '🏡',
+                        'VA loans': '🎖️',
+                        'Relocation': '✈️',
+                        'Off-market deals': '🔑',
+                        'Coastal expert': '🌴',
+                        'Luxury homes': '💎',
+                        'Investment properties': '📈',
+                        'Commercial real estate': '🏢',
+                        'New construction': '🏗️',
+                        'Foreclosures': '🔨',
+                      };
+                      for (const [key, emoji] of Object.entries(serviceEmojis)) {
+                        if (service.toLowerCase().includes(key.toLowerCase())) {
+                          return emoji;
+                        }
+                      }
+                      return '⭐';
+                    };
+
+                    return (
+                      <span key={index} className="px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-1">
+                        <span>{getEmoji(service)}</span>
+                        <span>{service}</span>
+                      </span>
+                    );
+                  })
+                ) : (
+                  <p className="text-muted-foreground text-sm">No services listed yet</p>
+                )}
+              </div>
+            </TabsContent>
+          )}
         </Tabs>
       </div>
 

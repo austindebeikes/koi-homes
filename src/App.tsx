@@ -16,6 +16,7 @@ import EditProfile from "./pages/EditProfile";
 import NewPost from "./pages/NewPost";
 import PostDetail from "./pages/PostDetail";
 import Likes from "./pages/Likes";
+import Pond from "./pages/Pond";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/post/new" element={<NewPost />} />
             <Route path="/post/:id" element={<PostDetail />} />
             <Route path="/likes" element={<Likes />} />
+            <Route path="/pond" element={<Pond />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

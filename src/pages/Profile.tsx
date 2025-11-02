@@ -7,19 +7,39 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Plus, Camera, Waves } from 'lucide-react';
+import { ServiceManager } from '@/components/ServiceManager';
+import { DailyCard } from '@/components/DailyCard';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from '@/hooks/use-toast';
 
 export default function Profile() {
-  const { profile, signOut } = useAuth();
+  const { profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [posts, setPosts] = useState<any[]>([]);
+  const [dailyPost, setDailyPost] = useState<any>(null);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [services, setServices] = useState<string[]>([]);
+  const [deletePostId, setDeletePostId] = useState<string | null>(null);
+  const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (profile?.id) {
       loadPosts();
       loadFollowCounts();
+      loadDaily();
+      setServices((profile as any).services || []);
     }
   }, [profile?.id]);
 
@@ -30,6 +50,7 @@ export default function Profile() {
       .from('posts')
       .select('*')
       .eq('user_id', profile.id)
+      .eq('is_daily', false)
       .order('created_at', { ascending: false });
     
     if (error) {
@@ -38,6 +59,42 @@ export default function Profile() {
     }
     
     setPosts(data || []);
+  };
+
+  const loadDaily = async () => {
+    if (!profile?.id) return;
+    
+    const { data, error } = await supabase
+      .from('posts')
+      .select(`
+        *,
+        users:user_id (
+          id,
+          first_name,
+          last_name,
+          city,
+          profile_photo_url
+        )
+      `)
+      .eq('user_id', profile.id)
+      .eq('is_daily', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    
+    if (error) {
+      console.error('Error loading daily:', error);
+      return;
+    }
+    
+    // Only show if less than 24 hours old
+    if (data) {
+      const postAge = Date.now() - new Date(data.created_at).getTime();
+      const hoursSincePost = postAge / (1000 * 60 * 60);
+      if (hoursSincePost < 24) {
+        setDailyPost(data);
+      }
+    }
   };
 
   const loadFollowCounts = async () => {
@@ -62,6 +119,50 @@ export default function Profile() {
   const handleSignOut = async () => {
     await signOut();
     navigate('/auth');
+  };
+
+  const handleDeletePost = async () => {
+    if (!deletePostId) return;
+
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', deletePostId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Post deleted",
+        description: "Your post has been deleted successfully.",
+      });
+
+      await loadPosts();
+      await refreshProfile();
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete post.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletePostId(null);
+    }
+  };
+
+  const handleMouseDown = (postId: string) => {
+    const timer = setTimeout(() => {
+      setDeletePostId(postId);
+    }, 500); // 500ms long press
+    setPressTimer(timer);
+  };
+
+  const handleMouseUp = () => {
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      setPressTimer(null);
+    }
   };
 
   if (!profile) {
@@ -105,14 +206,33 @@ export default function Profile() {
               </p>
             </div>
 
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => navigate('/profile/edit')}
-            >
-              Edit
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate('/profile/edit')}
+              >
+                Edit
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate('/pond')}
+                className="gap-1"
+              >
+                <Waves className="h-4 w-4" />
+                Pond
+              </Button>
+            </div>
           </div>
+
+          {/* Show Daily if exists and is recent */}
+          {dailyPost && (
+            <div className="pt-2">
+              <h3 className="text-sm font-semibold mb-2">Today&apos;s Quote</h3>
+              <DailyCard daily={dailyPost} />
+            </div>
+          )}
 
           <Button 
             className="w-full" 
@@ -130,7 +250,7 @@ export default function Profile() {
           <div className="flex gap-6 text-center">
             <div>
               <p className="font-bold text-lg">{posts.length}</p>
-              <p className="text-sm text-muted-foreground">Posts</p>
+              <p className="text-sm text-muted-foreground">Snapshots</p>
             </div>
             <div>
               <p className="font-bold text-lg">{followerCount}</p>
@@ -147,22 +267,34 @@ export default function Profile() {
           </Button>
         </div>
 
-        <Tabs defaultValue="posts" className="w-full">
+        <Tabs defaultValue="snapshots" className="w-full">
           <TabsList className="w-full">
-            <TabsTrigger value="posts" className="flex-1">Posts</TabsTrigger>
-            <TabsTrigger value="services" className="flex-1">Services</TabsTrigger>
+            <TabsTrigger value="snapshots" className="flex-1 gap-1">
+              <Camera className="h-4 w-4" />
+              Snapshots
+            </TabsTrigger>
+            {profile.role === 'Agent' && (
+              <TabsTrigger value="services" className="flex-1">Services</TabsTrigger>
+            )}
           </TabsList>
 
-          <TabsContent value="posts" className="p-1">
+          <TabsContent value="snapshots" className="p-1">
             <div className="grid grid-cols-2 gap-1">
               {posts.length > 0 ? (
                 posts.map((post) => (
-                  <div key={post.id} className="relative group">
+                  <div 
+                    key={post.id} 
+                    className="relative group"
+                    onMouseDown={() => handleMouseDown(post.id)}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    onTouchStart={() => handleMouseDown(post.id)}
+                    onTouchEnd={handleMouseUp}
+                  >
                     <img
                       src={post.photo_url}
                       alt={post.caption || 'Post'}
-                      className="w-full aspect-square object-cover rounded cursor-pointer"
-                      onClick={() => navigate(`/post/${post.id}`)}
+                      className="w-full aspect-square object-cover rounded"
                     />
                     {post.caption && (
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2 rounded">
@@ -173,22 +305,36 @@ export default function Profile() {
                 ))
               ) : (
                 <p className="col-span-2 text-center text-muted-foreground py-8">
-                  No posts yet. Create your first post!
+                  No snapshots yet. Create your first snapshot!
                 </p>
               )}
             </div>
           </TabsContent>
 
-          <TabsContent value="services" className="p-4">
-            <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">First-time buyers</span>
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">VA loans</span>
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">Relocation</span>
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">Off-market deals</span>
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">Coastal expert</span>
-            </div>
-          </TabsContent>
+          {profile.role === 'Agent' && (
+            <TabsContent value="services" className="p-4">
+              <ServiceManager 
+                services={services} 
+                onServicesChange={setServices} 
+              />
+            </TabsContent>
+          )}
         </Tabs>
+
+        <AlertDialog open={!!deletePostId} onOpenChange={(open) => !open && setDeletePostId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Snapshot?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this snapshot? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeletePost}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       <BottomNav />
