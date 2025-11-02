@@ -209,13 +209,7 @@ export default function PostDetail() {
         {/* User Info - Clickable */}
         <div 
           className="flex items-center gap-3 mb-4 cursor-pointer hover:opacity-80 transition-opacity"
-          onClick={() => {
-            if (post.users.id === profile?.id) {
-              navigate('/profile');
-            } else {
-              navigate(`/agent/${post.users.id}`);
-            }
-          }}
+          onClick={() => navigate(`/agent/${post.users.id}`)}
         >
           <Avatar>
             <AvatarImage src={post.users.profile_photo_url} />

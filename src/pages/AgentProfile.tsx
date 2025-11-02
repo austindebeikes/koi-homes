@@ -66,7 +66,6 @@ export default function AgentProfile() {
         .from('posts')
         .select('*')
         .eq('user_id', id)
-        .eq('is_daily', false)
         .order('created_at', { ascending: false });
 
       if (postsError) throw postsError;
@@ -211,27 +210,29 @@ export default function AgentProfile() {
             </div>
           </div>
 
+          <div className="flex gap-2">
+            {profile?.id !== id && (
+              <Button
+                variant={isFollowing ? "outline" : "default"}
+                className="flex-1"
+                size="lg"
+                onClick={handleFollowToggle}
+              >
+                {isFollowing ? 'Following' : 'Follow'}
+              </Button>
+            )}
+            <Button 
+              className="flex-1" 
+              size="lg"
+              onClick={() => navigate(`/chat/${agent.id}`)}
+            >
+              <MessageCircle className="mr-2 h-5 w-5" />
+              Message
+            </Button>
+          </div>
+
           {profile?.id !== id && (
             <>
-              <div className="flex gap-2">
-                <Button
-                  variant={isFollowing ? "outline" : "default"}
-                  className="flex-1"
-                  size="lg"
-                  onClick={handleFollowToggle}
-                >
-                  {isFollowing ? 'Following' : 'Follow'}
-                </Button>
-                <Button 
-                  className="flex-1" 
-                  size="lg"
-                  onClick={() => navigate(`/chat/${agent.id}`)}
-                >
-                  <MessageCircle className="mr-2 h-5 w-5" />
-                  Message
-                </Button>
-              </div>
-
               <div className="flex gap-2 pt-2">
                 <Button
                   variant="outline"
@@ -308,21 +309,11 @@ export default function AgentProfile() {
 
           <TabsContent value="services" className="p-4">
             <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-1">
-                <span>🏡</span> First-time buyers
-              </span>
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-1">
-                <span>🎖️</span> VA loans
-              </span>
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-1">
-                <span>✈️</span> Relocation
-              </span>
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-1">
-                <span>🔑</span> Off-market deals
-              </span>
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-1">
-                <span>🌴</span> Coastal expert
-              </span>
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">First-time buyers</span>
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">VA loans</span>
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">Relocation</span>
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">Off-market deals</span>
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">Coastal expert</span>
             </div>
           </TabsContent>
         </Tabs>

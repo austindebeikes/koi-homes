@@ -6,7 +6,6 @@ import { AppHeader } from '@/components/AppHeader';
 import { BottomNav } from '@/components/BottomNav';
 import { Heart, MessageCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 
 interface Comment {
   id: string;
@@ -23,9 +22,7 @@ interface Post {
   photo_url: string;
   caption: string;
   created_at: string;
-  is_daily: boolean;
   users: {
-    id: string;
     first_name: string;
     last_name: string;
     role: string;
@@ -59,7 +56,6 @@ export default function Feed() {
         .select(`
           *,
           users:user_id (
-            id,
             first_name,
             last_name,
             role,
@@ -163,14 +159,9 @@ export default function Feed() {
 
   const filteredPosts = posts.filter(post => {
     if (activeTab === 'photos') {
-      return !post.is_daily;
+      return post.photo_url && post.photo_url.trim() !== '';
     } else {
-      // Daily's: only show if is_daily = true AND less than 24 hours old
-      if (!post.is_daily) return false;
-      const postDate = new Date(post.created_at);
-      const now = new Date();
-      const hoursDiff = (now.getTime() - postDate.getTime()) / (1000 * 60 * 60);
-      return hoursDiff < 24;
+      return !post.photo_url || post.photo_url.trim() === '';
     }
   });
 
@@ -212,112 +203,66 @@ export default function Feed() {
         ) : (
           filteredPosts.map((post) => (
             <div key={post.id} className="mb-6 border-b border-border pb-4">
-              {post.is_daily ? (
-                // Daily's view - newspaper style
-                <div 
-                  className="mx-4 p-4 border-2 border-primary/30 rounded-lg bg-background shadow-sm"
-                  style={{ fontFamily: 'Georgia, serif' }}
-                >
-                  <div 
-                    className="flex items-center gap-3 mb-3 cursor-pointer hover:opacity-80"
-                    onClick={() => navigate(`/agent/${post.users.id}`)}
-                  >
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={post.users.profile_photo_url} alt={`${post.users.first_name} ${post.users.last_name}`} />
-                      <AvatarFallback>{post.users.first_name[0]}{post.users.last_name[0]}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-bold text-sm">{post.users.first_name} {post.users.last_name}</p>
-                      <p className="text-xs text-muted-foreground">{post.users.city}</p>
-                    </div>
-                  </div>
-                  
-                  {post.caption && (
-                    <p className="text-base leading-relaxed mb-3 whitespace-pre-wrap">{post.caption}</p>
-                  )}
-                  
-                  <div className="flex items-center justify-between pt-2 border-t border-border">
-                    <p className="text-xs text-muted-foreground italic">
-                      {new Date(post.created_at).toLocaleString()}
-                    </p>
-                    <Button
-                      size="sm"
-                      onClick={() => navigate(`/chat/${post.user_id}`)}
-                      className="gap-2"
-                    >
-                      <MessageCircle className="h-4 w-4" />
-                      Message Agent
-                    </Button>
-                  </div>
+              <div className="flex items-center gap-3 p-4">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={post.users.profile_photo_url} alt={`${post.users.first_name} ${post.users.last_name}`} />
+                  <AvatarFallback>{post.users.first_name[0]}{post.users.last_name[0]}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-semibold text-sm">{post.users.first_name} {post.users.last_name}</p>
+                  <p className="text-xs text-muted-foreground">{post.users.city}</p>
                 </div>
-              ) : (
-                // Regular photo post view
-                <>
-                  <div 
-                    className="flex items-center gap-3 p-4 cursor-pointer hover:opacity-80"
-                    onClick={() => navigate(`/agent/${post.users.id}`)}
-                  >
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={post.users.profile_photo_url} alt={`${post.users.first_name} ${post.users.last_name}`} />
-                      <AvatarFallback>{post.users.first_name[0]}{post.users.last_name[0]}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-semibold text-sm">{post.users.first_name} {post.users.last_name}</p>
-                      <p className="text-xs text-muted-foreground">{post.users.city}</p>
-                    </div>
-                  </div>
+              </div>
 
-                  {post.photo_url && post.photo_url.trim() !== '' && (
-                    <img
-                      src={post.photo_url}
-                      alt="Post"
-                      className="w-full aspect-square object-cover cursor-pointer"
-                      onClick={() => navigate(`/post/${post.id}`)}
-                    />
-                  )}
-
-                  <div className="p-4 space-y-2">
-                    <div className="flex gap-4">
-                      <button 
-                        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleLikeToggle(post.id, post.isLiked || false);
-                        }}
-                      >
-                        <Heart className={`h-6 w-6 ${post.isLiked ? 'fill-red-500 text-red-500' : ''}`} />
-                        <span className="text-sm font-semibold">{post.likeCount || 0}</span>
-                      </button>
-                      <button 
-                        className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
-                        onClick={() => navigate(`/post/${post.id}`)}
-                      >
-                        <MessageCircle className="h-6 w-6" />
-                      </button>
-                    </div>
-
-                    {post.caption && (
-                      <p className="text-sm">
-                        <span className="font-semibold">{post.users.first_name} {post.users.last_name}</span> {post.caption}
-                      </p>
-                    )}
-
-                    {post.comments && post.comments.length > 0 && (
-                      <div className="space-y-1 pt-1">
-                        {post.comments.slice(0, 2).map((comment) => (
-                          <p key={comment.id} className="text-sm text-muted-foreground">
-                            <span className="font-semibold text-foreground">{comment.users.first_name}</span> {comment.body}
-                          </p>
-                        ))}
-                      </div>
-                    )}
-
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(post.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                </>
+              {post.photo_url && post.photo_url.trim() !== '' && (
+                <img
+                  src={post.photo_url}
+                  alt="Post"
+                  className="w-full aspect-square object-cover cursor-pointer"
+                  onClick={() => navigate(`/post/${post.id}`)}
+                />
               )}
+
+              <div className="p-4 space-y-2">
+                <div className="flex gap-4">
+                  <button 
+                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleLikeToggle(post.id, post.isLiked || false);
+                    }}
+                  >
+                    <Heart className={`h-6 w-6 ${post.isLiked ? 'fill-red-500 text-red-500' : ''}`} />
+                    <span className="text-sm font-semibold">{post.likeCount || 0}</span>
+                  </button>
+                  <button 
+                    className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
+                    onClick={() => navigate(`/post/${post.id}`)}
+                  >
+                    <MessageCircle className="h-6 w-6" />
+                  </button>
+                </div>
+
+                {post.caption && (
+                  <p className="text-sm">
+                    <span className="font-semibold">{post.users.first_name} {post.users.last_name}</span> {post.caption}
+                  </p>
+                )}
+
+                {post.comments && post.comments.length > 0 && (
+                  <div className="space-y-1 pt-1">
+                    {post.comments.slice(0, 2).map((comment) => (
+                      <p key={comment.id} className="text-sm text-muted-foreground">
+                        <span className="font-semibold text-foreground">{comment.users.first_name}</span> {comment.body}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+                <p className="text-xs text-muted-foreground">
+                  {new Date(post.created_at).toLocaleDateString()}
+                </p>
+              </div>
             </div>
           ))
         )}

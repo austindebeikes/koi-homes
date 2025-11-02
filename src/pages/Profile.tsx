@@ -30,7 +30,6 @@ export default function Profile() {
       .from('posts')
       .select('*')
       .eq('user_id', profile.id)
-      .eq('is_daily', false)
       .order('created_at', { ascending: false });
     
     if (error) {
@@ -182,21 +181,11 @@ export default function Profile() {
 
           <TabsContent value="services" className="p-4">
             <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-1">
-                <span>🏡</span> First-time buyers
-              </span>
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-1">
-                <span>🎖️</span> VA loans
-              </span>
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-1">
-                <span>✈️</span> Relocation
-              </span>
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-1">
-                <span>🔑</span> Off-market deals
-              </span>
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-1">
-                <span>🌴</span> Coastal expert
-              </span>
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">First-time buyers</span>
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">VA loans</span>
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">Relocation</span>
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">Off-market deals</span>
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">Coastal expert</span>
             </div>
           </TabsContent>
         </Tabs>
