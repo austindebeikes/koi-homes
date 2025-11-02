@@ -27,21 +27,27 @@ export default function Profile() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [posts, setPosts] = useState<any[]>([]);
+  const [savedPosts, setSavedPosts] = useState<any[]>([]);
   const [dailyPost, setDailyPost] = useState<any>(null);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [services, setServices] = useState<string[]>([]);
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const isBuyer = profile?.role === 'Buyer';
 
   useEffect(() => {
     if (profile?.id) {
-      loadPosts();
+      if (isBuyer) {
+        loadSavedPosts();
+      } else {
+        loadPosts();
+      }
       loadFollowCounts();
       loadDaily();
       setServices((profile as any).services || []);
     }
-  }, [profile?.id]);
+  }, [profile?.id, isBuyer]);
 
   const loadPosts = async () => {
     if (!profile?.id) return;
@@ -59,6 +65,39 @@ export default function Profile() {
     }
     
     setPosts(data || []);
+  };
+
+  const loadSavedPosts = async () => {
+    if (!profile?.id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('saved_posts')
+        .select(`
+          id,
+          post_id,
+          posts (
+            id,
+            photo_url,
+            caption,
+            user_id,
+            users (
+              id,
+              first_name,
+              last_name,
+              profile_photo_url,
+              city
+            )
+          )
+        `)
+        .eq('user_id', profile.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setSavedPosts(data || []);
+    } catch (error) {
+      console.error('Error loading saved posts:', error);
+    }
   };
 
   const loadDaily = async () => {
@@ -214,15 +253,17 @@ export default function Profile() {
               >
                 Edit
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => navigate('/pond')}
-                className="gap-1"
-              >
-                <Waves className="h-4 w-4" />
-                Pond
-              </Button>
+              {!isBuyer && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate('/pond')}
+                  className="gap-1"
+                >
+                  <Waves className="h-4 w-4" />
+                  Pond
+                </Button>
+              )}
             </div>
           </div>
 
@@ -234,14 +275,16 @@ export default function Profile() {
             </div>
           )}
 
-          <Button 
-            className="w-full" 
-            size="lg"
-            onClick={() => navigate('/post/new')}
-          >
-            <Plus className="mr-2 h-5 w-5" />
-            Create Post
-          </Button>
+          {!isBuyer && (
+            <Button 
+              className="w-full" 
+              size="lg"
+              onClick={() => navigate('/post/new')}
+            >
+              <Plus className="mr-2 h-5 w-5" />
+              Create Post
+            </Button>
+          )}
 
           <p className="text-sm">
             {profile.bio}
@@ -249,8 +292,8 @@ export default function Profile() {
 
           <div className="flex gap-6 text-center">
             <div>
-              <p className="font-bold text-lg">{posts.length}</p>
-              <p className="text-sm text-muted-foreground">Snapshots</p>
+              <p className="font-bold text-lg">{isBuyer ? savedPosts.length : posts.length}</p>
+              <p className="text-sm text-muted-foreground">{isBuyer ? 'Pond' : 'Snapshots'}</p>
             </div>
             <div>
               <p className="font-bold text-lg">{followerCount}</p>
@@ -267,59 +310,98 @@ export default function Profile() {
           </Button>
         </div>
 
-        <Tabs defaultValue="snapshots" className="w-full">
-          <TabsList className="w-full">
-            <TabsTrigger value="snapshots" className="flex-1 gap-1">
-              <Camera className="h-4 w-4" />
-              Snapshots
-            </TabsTrigger>
-            {profile.role === 'Agent' && (
-              <TabsTrigger value="services" className="flex-1">Services</TabsTrigger>
-            )}
-          </TabsList>
-
-          <TabsContent value="snapshots" className="p-1">
-            <div className="grid grid-cols-2 gap-1">
-              {posts.length > 0 ? (
-                posts.map((post) => (
-                  <div 
-                    key={post.id} 
-                    className="relative group"
-                    onMouseDown={() => handleMouseDown(post.id)}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                    onTouchStart={() => handleMouseDown(post.id)}
-                    onTouchEnd={handleMouseUp}
-                  >
+        {isBuyer ? (
+          <div className="p-1">
+            <div className="grid grid-cols-2 gap-3">
+              {savedPosts.length > 0 ? (
+                savedPosts.map((saved: any) => (
+                  <div key={saved.id} className="relative">
                     <img
-                      src={post.photo_url}
-                      alt={post.caption || 'Post'}
-                      className="w-full aspect-square object-cover rounded"
+                      src={saved.posts.photo_url}
+                      alt={saved.posts.caption || 'Saved post'}
+                      className="w-full aspect-square object-cover rounded-lg"
                     />
-                    {post.caption && (
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2 rounded">
-                        <p className="text-white text-xs line-clamp-2">{post.caption}</p>
-                      </div>
-                    )}
+                    <div 
+                      className="absolute top-2 left-2 cursor-pointer"
+                      onClick={() => {
+                        if (saved.posts.users.id === profile?.id) {
+                          navigate('/profile');
+                        } else {
+                          navigate(`/agent/${saved.posts.users.id}`);
+                        }
+                      }}
+                    >
+                      <Avatar className="h-8 w-8 ring-2 ring-background">
+                        <AvatarImage src={saved.posts.users.profile_photo_url} />
+                        <AvatarFallback className="text-xs">
+                          {saved.posts.users.first_name[0]}{saved.posts.users.last_name[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
                   </div>
                 ))
               ) : (
                 <p className="col-span-2 text-center text-muted-foreground py-8">
-                  No snapshots yet. Create your first snapshot!
+                  Your pond is empty. Start saving snapshots you love!
                 </p>
               )}
             </div>
-          </TabsContent>
+          </div>
+        ) : (
+          <Tabs defaultValue="snapshots" className="w-full">
+            <TabsList className="w-full">
+              <TabsTrigger value="snapshots" className="flex-1 gap-1">
+                <Camera className="h-4 w-4" />
+                Snapshots
+              </TabsTrigger>
+              {profile.role === 'Agent' && (
+                <TabsTrigger value="services" className="flex-1">Services</TabsTrigger>
+              )}
+            </TabsList>
 
-          {profile.role === 'Agent' && (
-            <TabsContent value="services" className="p-4">
-              <ServiceManager 
-                services={services} 
-                onServicesChange={setServices} 
-              />
+            <TabsContent value="snapshots" className="p-1">
+              <div className="grid grid-cols-2 gap-1">
+                {posts.length > 0 ? (
+                  posts.map((post) => (
+                    <div 
+                      key={post.id} 
+                      className="relative group"
+                      onMouseDown={() => handleMouseDown(post.id)}
+                      onMouseUp={handleMouseUp}
+                      onMouseLeave={handleMouseUp}
+                      onTouchStart={() => handleMouseDown(post.id)}
+                      onTouchEnd={handleMouseUp}
+                    >
+                      <img
+                        src={post.photo_url}
+                        alt={post.caption || 'Post'}
+                        className="w-full aspect-square object-cover rounded"
+                      />
+                      {post.caption && (
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2 rounded">
+                          <p className="text-white text-xs line-clamp-2">{post.caption}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="col-span-2 text-center text-muted-foreground py-8">
+                    No snapshots yet. Create your first snapshot!
+                  </p>
+                )}
+              </div>
             </TabsContent>
-          )}
-        </Tabs>
+
+            {profile.role === 'Agent' && (
+              <TabsContent value="services" className="p-4">
+                <ServiceManager 
+                  services={services} 
+                  onServicesChange={setServices} 
+                />
+              </TabsContent>
+            )}
+          </Tabs>
+        )}
 
         <AlertDialog open={!!deletePostId} onOpenChange={(open) => !open && setDeletePostId(null)}>
           <AlertDialogContent>
