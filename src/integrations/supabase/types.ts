@@ -205,6 +205,7 @@ export type Database = {
           caption: string | null
           created_at: string | null
           id: string
+          is_daily: boolean
           photo_url: string
           user_id: string
         }
@@ -212,6 +213,7 @@ export type Database = {
           caption?: string | null
           created_at?: string | null
           id?: string
+          is_daily?: boolean
           photo_url: string
           user_id: string
         }
@@ -219,6 +221,7 @@ export type Database = {
           caption?: string | null
           created_at?: string | null
           id?: string
+          is_daily?: boolean
           photo_url?: string
           user_id?: string
         }

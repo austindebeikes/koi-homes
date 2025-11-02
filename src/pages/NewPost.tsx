@@ -49,6 +49,43 @@ export default function NewPost() {
       return;
     }
 
+    // Only agents can create Daily's
+    if (postType === 'daily' && profile.role !== 'Agent') {
+      toast({
+        title: "Not allowed",
+        description: "Only agents can post Daily's.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if agent already has a Daily in the last 24 hours
+    if (postType === 'daily') {
+      const twentyFourHoursAgo = new Date();
+      twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+
+      const { data: existingDaily, error: checkError } = await supabase
+        .from('posts')
+        .select('id, created_at')
+        .eq('user_id', profile.id)
+        .eq('is_daily', true)
+        .gte('created_at', twentyFourHoursAgo.toISOString())
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking existing Daily:', checkError);
+      }
+
+      if (existingDaily) {
+        toast({
+          title: "Daily already posted",
+          description: "You've already posted your Daily. You can post another in 24 hours.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     setIsSubmitting(true);
     
     try {
@@ -59,6 +96,7 @@ export default function NewPost() {
           user_id: profile.id,
           photo_url: postType === 'photo' ? imageUrl.trim() : '',
           caption: caption.trim(),
+          is_daily: postType === 'daily',
         });
 
       if (error) throw error;
