@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import koiLogo from '@/assets/koi-logo.png';
+import koiBrand from '@/assets/koi-brand.png';
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -110,14 +110,11 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <AppHeader title={isLogin ? "Log in" : "Sign up"} showLogo={false} />
-      
-      <div className="max-w-md mx-auto p-6 flex-1">
+      <div className="max-w-md mx-auto p-6 flex-1 flex flex-col justify-center">
         {/* Branded Header */}
-        <div className="flex flex-col items-center gap-3 mb-8">
-          <img src={koiLogo} alt="koi" className="h-20 w-20" />
-          <h2 className="text-4xl font-koi font-semibold text-primary">koi</h2>
-          <p className="text-muted-foreground text-center">
+        <div className="flex flex-col items-center gap-6 mb-8">
+          <img src={koiBrand} alt="Koi" className="w-64 h-64 object-contain" />
+          <p className="text-primary text-lg font-medium text-center">
             {isLogin ? 'Welcome back' : 'Join the community'}
           </p>
         </div>

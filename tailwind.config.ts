@@ -15,6 +15,7 @@ export default {
     extend: {
       fontFamily: {
         'koi': ['Comfortaa', 'sans-serif'],
+        'koi-script': ['Pacifico', 'cursive'],
         'sans': ['Comfortaa', 'system-ui', 'sans-serif'],
       },
       colors: {
