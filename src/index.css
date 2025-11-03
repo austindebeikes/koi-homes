@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --background: 28 50% 93%;
+    --background: 28 35% 92%;
     --foreground: 0 0% 11%;
     
     --card: 28 50% 96%;
@@ -15,8 +15,8 @@
     --popover: 28 50% 96%;
     --popover-foreground: 0 0% 11%;
     
-    --primary: 167 54% 24%;
-    --primary-foreground: 28 50% 93%;
+    --primary: 180 50% 25%;
+    --primary-foreground: 28 35% 92%;
     
     --secondary: 28 35% 88%;
     --secondary-foreground: 0 0% 11%;
@@ -24,7 +24,7 @@
     --muted: 28 35% 88%;
     --muted-foreground: 0 0% 31%;
     
-    --accent: 18 89% 59%;
+    --accent: 18 80% 60%;
     --accent-foreground: 0 0% 100%;
     
     --destructive: 0 84% 60%;
@@ -32,9 +32,9 @@
     
     --border: 28 30% 85%;
     --input: 28 30% 90%;
-    --ring: 167 54% 24%;
+    --ring: 180 50% 25%;
     
-    --dailys-bg: 30 40% 96%;
+    --dailys-bg: 30 30% 95%;
     
     --radius: 0.75rem;
 
@@ -56,33 +56,33 @@
   }
 
   .dark {
-    --background: 167 54% 8%;
-    --foreground: 28 50% 93%;
+    --background: 180 50% 8%;
+    --foreground: 28 35% 92%;
     
-    --card: 167 54% 12%;
-    --card-foreground: 28 50% 93%;
+    --card: 180 50% 12%;
+    --card-foreground: 28 35% 92%;
     
-    --popover: 167 54% 12%;
-    --popover-foreground: 28 50% 93%;
+    --popover: 180 50% 12%;
+    --popover-foreground: 28 35% 92%;
     
-    --primary: 167 54% 35%;
-    --primary-foreground: 28 50% 93%;
+    --primary: 180 50% 35%;
+    --primary-foreground: 28 35% 92%;
     
-    --secondary: 167 30% 18%;
-    --secondary-foreground: 28 50% 93%;
+    --secondary: 180 30% 18%;
+    --secondary-foreground: 28 35% 92%;
     
-    --muted: 167 30% 18%;
+    --muted: 180 30% 18%;
     --muted-foreground: 28 35% 75%;
     
-    --accent: 18 89% 59%;
+    --accent: 18 80% 60%;
     --accent-foreground: 0 0% 100%;
     
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     
-    --border: 167 30% 20%;
-    --input: 167 30% 20%;
-    --ring: 167 54% 35%;
+    --border: 180 30% 20%;
+    --input: 180 30% 20%;
+    --ring: 180 50% 35%;
     
     --dailys-bg: 30 30% 15%;
     

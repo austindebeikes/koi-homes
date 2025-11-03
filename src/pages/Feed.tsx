@@ -109,8 +109,7 @@ export default function Feed() {
         
         toast({
           title: "Added to your pond! 🐟",
-          description: "This snapshot has been saved to your collection.",
-          className: "bg-accent text-accent-foreground border-accent shadow-lg",
+          className: "bg-accent text-accent-foreground border-none shadow-lg",
         });
       }
 
@@ -200,7 +199,7 @@ export default function Feed() {
           ) : (
             // Snapshots view
             filteredPosts.map((post) => (
-              <div key={post.id} className="mb-6 bg-card rounded-2xl shadow-md overflow-hidden border border-border/50">
+              <div key={post.id} className="mb-6 bg-card rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.08)] overflow-hidden border border-border/50">
                 <div 
                   className="flex items-center gap-3 p-4 cursor-pointer hover:bg-muted/30 transition-colors"
                   onClick={() => {
@@ -225,7 +224,7 @@ export default function Feed() {
                   <img
                     src={post.photo_url}
                     alt="Post"
-                    className="w-full aspect-square object-cover"
+                    className="w-full aspect-square object-cover rounded-lg"
                   />
                 )}
 
@@ -248,10 +247,11 @@ export default function Feed() {
                         e.stopPropagation();
                         handleSaveToggle(post.id, post.isSaved || false);
                       }}
-                      className="gap-2"
+                      className="gap-2 group relative overflow-hidden"
                     >
-                      <img src={koiLogo} alt="Koi" className="h-4 w-4" />
-                      {post.isSaved ? 'In Pond' : 'Add to Pond'}
+                      <span className={`absolute inset-0 rounded-full transition-all duration-300 ease-out ${post.isSaved ? '' : 'scale-0 group-active:scale-150 bg-accent/20'}`}></span>
+                      <img src={koiLogo} alt="Koi" className="h-4 w-4 relative z-10" />
+                      <span className="relative z-10">{post.isSaved ? 'In Pond' : 'Add to Pond'}</span>
                     </Button>
                   </div>
                 </div>

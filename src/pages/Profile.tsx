@@ -222,7 +222,7 @@ export default function Profile() {
 
       <div className="max-w-md mx-auto">
         <div className="p-4 space-y-3">
-          <div className="flex items-start gap-4">
+          <div className="flex items-start gap-3">
             <Avatar className="h-24 w-24 border-4 border-primary/10">
               <AvatarImage 
                 src={profile.profile_photo_url} 
@@ -234,7 +234,7 @@ export default function Profile() {
             </Avatar>
 
             <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-bold mb-0.5">
+              <h2 className="text-xl font-bold mb-0.5 leading-tight">
                 {profile.first_name} {profile.last_name}
               </h2>
               <p className="text-muted-foreground text-xs mb-0.5">
@@ -245,7 +245,7 @@ export default function Profile() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1.5">
               <Button 
                 variant="outline" 
                 size="sm"
@@ -269,8 +269,8 @@ export default function Profile() {
 
           {/* Show Daily if exists and is recent */}
           {dailyPost && (
-            <div className="pt-1">
-              <h3 className="text-xs font-semibold mb-2 text-muted-foreground">Today&apos;s Quote</h3>
+            <div className="pt-0.5">
+              <h3 className="text-xs font-semibold mb-1.5 text-muted-foreground">Today&apos;s Quote</h3>
               <DailyCard daily={dailyPost} />
             </div>
           )}
@@ -291,17 +291,17 @@ export default function Profile() {
             {profile.bio}
           </p>
 
-          <div className="flex gap-6 text-center py-2">
+          <div className="flex gap-8 text-center py-2">
             <div>
-              <p className="font-bold text-lg">{isBuyer ? savedPosts.length : posts.length}</p>
+              <p className="font-bold text-lg leading-tight">{isBuyer ? savedPosts.length : posts.length}</p>
               <p className="text-xs text-muted-foreground">{isBuyer ? 'Pond' : 'Snapshots'}</p>
             </div>
             <div>
-              <p className="font-bold text-lg">{followerCount}</p>
+              <p className="font-bold text-lg leading-tight">{followerCount}</p>
               <p className="text-xs text-muted-foreground">Followers</p>
             </div>
             <div>
-              <p className="font-bold text-lg">{followingCount}</p>
+              <p className="font-bold text-lg leading-tight">{followingCount}</p>
               <p className="text-xs text-muted-foreground">Following</p>
             </div>
           </div>
@@ -373,13 +373,13 @@ export default function Profile() {
                       onTouchStart={() => handleMouseDown(post.id)}
                       onTouchEnd={handleMouseUp}
                     >
-                      <img
-                        src={post.photo_url}
-                        alt={post.caption || 'Post'}
-                        className="w-full aspect-square object-cover rounded"
-                      />
+                    <img
+                      src={post.photo_url}
+                      alt={post.caption || 'Post'}
+                      className="w-full aspect-square object-cover rounded-lg"
+                    />
                       {post.caption && (
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2 rounded">
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2 rounded-lg">
                           <p className="text-white text-xs line-clamp-2">{post.caption}</p>
                         </div>
                       )}
