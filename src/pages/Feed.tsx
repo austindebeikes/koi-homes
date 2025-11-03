@@ -109,7 +109,6 @@ export default function Feed() {
         
         toast({
           title: "Added to your pond! 🐟",
-          className: "bg-accent text-accent-foreground border-none shadow-lg",
         });
       }
 

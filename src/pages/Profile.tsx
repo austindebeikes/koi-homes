@@ -253,17 +253,15 @@ export default function Profile() {
               >
                 Edit
               </Button>
-              {!isBuyer && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => navigate('/pond')}
-                  className="gap-1"
-                >
-                  <Waves className="h-4 w-4" />
-                  Pond
-                </Button>
-              )}
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate('/pond')}
+                className="gap-1"
+              >
+                <Waves className="h-4 w-4" />
+                Pond
+              </Button>
             </div>
           </div>
 
@@ -306,9 +304,11 @@ export default function Profile() {
             </div>
           </div>
 
-          <Button onClick={handleSignOut} variant="outline" className="w-full">
-            Sign Out
-          </Button>
+          <div className="space-y-2">
+            <Button onClick={handleSignOut} variant="outline" className="w-full">
+              Sign Out
+            </Button>
+          </div>
         </div>
 
         {isBuyer ? (

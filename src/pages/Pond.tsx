@@ -137,9 +137,10 @@ export default function Pond() {
 
       if (error) throw error;
       
-      // Filter unique buyers
+      // Filter unique buyers and exclude self
       const uniqueBuyers = data?.filter((item: any, index: number, self: any[]) =>
-        index === self.findIndex((t: any) => t.user_id === item.user_id)
+        index === self.findIndex((t: any) => t.user_id === item.user_id) &&
+        item.user_id !== profile.id
       ) || [];
       
       setInterestedBuyers(uniqueBuyers as any);
@@ -180,11 +181,12 @@ export default function Pond() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {interestedBuyers.map((buyer) => (
+              <div className="space-y-3">
+                {interestedBuyers.map((buyer, index) => (
                   <div 
                     key={buyer.user_id} 
-                    className="flex items-center gap-3 p-4 bg-card rounded-lg border"
+                    className="flex items-center gap-3 p-4 bg-card rounded-lg border shadow-[0_2px_8px_rgba(0,0,0,0.06)] animate-fade-in"
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <Avatar 
                       className="h-12 w-12 cursor-pointer" 
@@ -208,10 +210,11 @@ export default function Pond() {
                     <Button
                       size="sm"
                       onClick={() => navigate(`/messages/${buyer.users.id}`)}
-                      className="gap-2"
+                      className="gap-2 relative overflow-hidden group"
                     >
+                      <span className="absolute inset-0 bg-white/20 scale-0 group-active:scale-100 rounded-full transition-transform duration-300 origin-center"></span>
                       <MessageCircle className="h-4 w-4" />
-                      Message
+                      Message Buyer
                     </Button>
                   </div>
                 ))}
