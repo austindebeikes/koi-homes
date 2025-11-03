@@ -221,9 +221,9 @@ export default function Profile() {
       <AppHeader title="Profile" showLogo={false} />
 
       <div className="max-w-md mx-auto">
-        <div className="p-6 space-y-4">
+        <div className="p-4 space-y-3">
           <div className="flex items-start gap-4">
-            <Avatar className="h-24 w-24">
+            <Avatar className="h-24 w-24 border-4 border-primary/10">
               <AvatarImage 
                 src={profile.profile_photo_url} 
                 alt="Profile"
@@ -234,13 +234,13 @@ export default function Profile() {
             </Avatar>
 
             <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-bold">
+              <h2 className="text-xl font-bold mb-0.5">
                 {profile.first_name} {profile.last_name}
               </h2>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-xs mb-0.5">
                 {profile.role === 'Agent' ? 'Real Estate Agent' : 'Home Buyer'}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {profile.city}
               </p>
             </div>
@@ -269,14 +269,15 @@ export default function Profile() {
 
           {/* Show Daily if exists and is recent */}
           {dailyPost && (
-            <div className="pt-2">
-              <h3 className="text-sm font-semibold mb-2">Today&apos;s Quote</h3>
+            <div className="pt-1">
+              <h3 className="text-xs font-semibold mb-2 text-muted-foreground">Today&apos;s Quote</h3>
               <DailyCard daily={dailyPost} />
             </div>
           )}
 
           {!isBuyer && (
             <Button 
+              variant="accent"
               className="w-full" 
               size="lg"
               onClick={() => navigate('/post/new')}
@@ -286,22 +287,22 @@ export default function Profile() {
             </Button>
           )}
 
-          <p className="text-sm">
+          <p className="text-sm leading-relaxed">
             {profile.bio}
           </p>
 
-          <div className="flex gap-6 text-center">
+          <div className="flex gap-6 text-center py-2">
             <div>
               <p className="font-bold text-lg">{isBuyer ? savedPosts.length : posts.length}</p>
-              <p className="text-sm text-muted-foreground">{isBuyer ? 'Pond' : 'Snapshots'}</p>
+              <p className="text-xs text-muted-foreground">{isBuyer ? 'Pond' : 'Snapshots'}</p>
             </div>
             <div>
               <p className="font-bold text-lg">{followerCount}</p>
-              <p className="text-sm text-muted-foreground">Followers</p>
+              <p className="text-xs text-muted-foreground">Followers</p>
             </div>
             <div>
               <p className="font-bold text-lg">{followingCount}</p>
-              <p className="text-sm text-muted-foreground">Following</p>
+              <p className="text-xs text-muted-foreground">Following</p>
             </div>
           </div>
 

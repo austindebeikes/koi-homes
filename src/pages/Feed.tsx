@@ -110,6 +110,7 @@ export default function Feed() {
         toast({
           title: "Added to your pond! 🐟",
           description: "This snapshot has been saved to your collection.",
+          className: "bg-accent text-accent-foreground border-accent shadow-lg",
         });
       }
 
@@ -199,9 +200,9 @@ export default function Feed() {
           ) : (
             // Snapshots view
             filteredPosts.map((post) => (
-              <div key={post.id} className="mb-6 border-b border-border pb-4">
+              <div key={post.id} className="mb-6 bg-card rounded-2xl shadow-md overflow-hidden border border-border/50">
                 <div 
-                  className="flex items-center gap-3 p-4 cursor-pointer hover:opacity-80 transition-opacity"
+                  className="flex items-center gap-3 p-4 cursor-pointer hover:bg-muted/30 transition-colors"
                   onClick={() => {
                     if (post.users.id === profile?.id) {
                       navigate('/profile');
@@ -210,7 +211,7 @@ export default function Feed() {
                     }
                   }}
                 >
-                  <Avatar className="h-10 w-10">
+                  <Avatar className="h-10 w-10 border-2 border-primary/10">
                     <AvatarImage src={post.users.profile_photo_url} alt={`${post.users.first_name} ${post.users.last_name}`} />
                     <AvatarFallback>{post.users.first_name[0]}{post.users.last_name[0]}</AvatarFallback>
                   </Avatar>
@@ -242,7 +243,7 @@ export default function Feed() {
                     
                     <Button
                       size="sm"
-                      variant={post.isSaved ? "default" : "outline"}
+                      variant={post.isSaved ? "default" : "accent"}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleSaveToggle(post.id, post.isSaved || false);

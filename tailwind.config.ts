@@ -16,7 +16,8 @@ export default {
       fontFamily: {
         'koi': ['Comfortaa', 'sans-serif'],
         'koi-script': ['Pacifico', 'cursive'],
-        'sans': ['Comfortaa', 'system-ui', 'sans-serif'],
+        'sans': ['Poppins', 'system-ui', 'sans-serif'],
+        'serif': ['Playfair Display', 'serif'],
       },
       colors: {
         border: "hsl(var(--border))",
