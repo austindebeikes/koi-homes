@@ -8,7 +8,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { MessageCircle, Coffee, Video } from 'lucide-react';
+import { MessageCircle, Coffee, Film } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
 
 interface AgentData {
   id: string;
@@ -39,8 +40,10 @@ export default function AgentProfile() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
-  const [showCoffeeDialog, setShowCoffeeDialog] = useState(false);
-  const [showVideoDialog, setShowVideoDialog] = useState(false);
+  const [showScheduleDialog, setShowScheduleDialog] = useState(false);
+  const [scheduleType, setScheduleType] = useState<'coffee' | 'video'>('coffee');
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedTime, setSelectedTime] = useState<string>('');
   const [requestSent, setRequestSent] = useState<string | null>(null);
 
   useEffect(() => {
@@ -141,8 +144,13 @@ export default function AgentProfile() {
     }
   };
 
-  const handleIntroRequest = async (type: 'coffee' | 'video') => {
-    if (!profile?.id || !id) return;
+  const handleScheduleClick = (type: 'coffee' | 'video') => {
+    setScheduleType(type);
+    setShowScheduleDialog(true);
+  };
+
+  const handleConfirmSchedule = async () => {
+    if (!selectedDate || !selectedTime || !profile?.id || !id) return;
 
     try {
       await supabase
@@ -150,13 +158,16 @@ export default function AgentProfile() {
         .insert({
           buyer_id: profile.id,
           agent_id: id,
-          type: type,
+          type: scheduleType,
         });
 
-      setRequestSent(type);
+      setShowScheduleDialog(false);
+      setSelectedDate(undefined);
+      setSelectedTime('');
+      setRequestSent(scheduleType);
       setTimeout(() => setRequestSent(null), 3000);
     } catch (error) {
-      console.error('Error creating intro request:', error);
+      console.error('Error scheduling meeting:', error);
     }
   };
 
@@ -234,28 +245,28 @@ export default function AgentProfile() {
 
           {profile?.id !== id && (
             <>
-              <div className="flex gap-2 pt-2">
+              <div className="flex gap-2">
                 <Button
                   variant="outline"
-                  className="flex-1"
-                  size="lg"
-                  onClick={() => handleIntroRequest('coffee')}
+                  className="flex-1 text-xs"
+                  size="sm"
+                  onClick={() => handleScheduleClick('coffee')}
                 >
-                  <Coffee className="mr-2 h-5 w-5" />
-                  Coffee Chat
+                  <Coffee className="mr-1.5 h-4 w-4" />
+                  Schedule Coffee
                 </Button>
                 <Button
                   variant="outline"
-                  className="flex-1"
-                  size="lg"
-                  onClick={() => handleIntroRequest('video')}
+                  className="flex-1 text-xs"
+                  size="sm"
+                  onClick={() => handleScheduleClick('video')}
                 >
-                  <Video className="mr-2 h-5 w-5" />
-                  Video Call
+                  <Film className="mr-1.5 h-4 w-4" />
+                  Schedule Video Call
                 </Button>
               </div>
               {requestSent && (
-                <p className="text-sm text-primary text-center pt-2">
+                <p className="text-sm text-primary text-center">
                   Request sent to this agent.
                 </p>
               )}
@@ -352,6 +363,40 @@ export default function AgentProfile() {
         </Tabs>
       </div>
 
+      <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Schedule a Meeting</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Select Date</label>
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                className="rounded-md border pointer-events-auto"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Select Time</label>
+              <input
+                type="time"
+                value={selectedTime}
+                onChange={(e) => setSelectedTime(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md"
+              />
+            </div>
+            <Button 
+              onClick={handleConfirmSchedule}
+              disabled={!selectedDate || !selectedTime}
+              className="w-full"
+            >
+              Confirm
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <BottomNav />
     </div>

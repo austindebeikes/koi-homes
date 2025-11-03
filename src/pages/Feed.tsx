@@ -107,8 +107,24 @@ export default function Feed() {
           .from('saved_posts')
           .insert({ post_id: postId, user_id: profile.id });
         
+        // Find the post's author
+        const post = posts.find(p => p.id === postId);
+        if (post && post.user_id !== profile.id) {
+          // Create notification for the agent
+          await supabase
+            .from('notifications')
+            .insert({
+              user_id: post.user_id,
+              type: 'post_saved',
+              message: `${profile.first_name} ${profile.last_name} added your post to their pond`,
+              related_user_id: profile.id,
+              related_post_id: postId,
+            });
+        }
+        
         toast({
           title: "Added to your pond! 🐟",
+          className: "bg-accent text-white border-none shadow-md",
         });
       }
 

@@ -311,44 +311,7 @@ export default function Profile() {
           </div>
         </div>
 
-        {isBuyer ? (
-          <div className="p-1">
-            <div className="grid grid-cols-2 gap-3">
-              {savedPosts.length > 0 ? (
-                savedPosts.map((saved: any) => (
-                  <div key={saved.id} className="relative">
-                    <img
-                      src={saved.posts.photo_url}
-                      alt={saved.posts.caption || 'Saved post'}
-                      className="w-full aspect-square object-cover rounded-lg"
-                    />
-                    <div 
-                      className="absolute top-2 left-2 cursor-pointer"
-                      onClick={() => {
-                        if (saved.posts.users.id === profile?.id) {
-                          navigate('/profile');
-                        } else {
-                          navigate(`/agent/${saved.posts.users.id}`);
-                        }
-                      }}
-                    >
-                      <Avatar className="h-8 w-8 ring-2 ring-background">
-                        <AvatarImage src={saved.posts.users.profile_photo_url} />
-                        <AvatarFallback className="text-xs">
-                          {saved.posts.users.first_name[0]}{saved.posts.users.last_name[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="col-span-2 text-center text-muted-foreground py-8">
-                  Your pond is empty. Start saving snapshots you love!
-                </p>
-              )}
-            </div>
-          </div>
-        ) : (
+        {!isBuyer && (
           <Tabs defaultValue="snapshots" className="w-full">
             <TabsList className="w-full">
               <TabsTrigger value="snapshots" className="flex-1 gap-1">
