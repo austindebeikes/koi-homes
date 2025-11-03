@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DailyCard } from '@/components/DailyCard';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { Camera } from 'lucide-react';
 import koiLogo from '@/assets/koi-logo.png';
 
 interface Post {
@@ -103,9 +104,21 @@ export default function Feed() {
           .eq('user_id', profile.id);
       } else {
         // Save
-        await supabase
+        const { error: insertError } = await supabase
           .from('saved_posts')
           .insert({ post_id: postId, user_id: profile.id });
+        
+        if (insertError) {
+          if (insertError.code === '23505') {
+            toast({
+              title: "Already in your pond",
+              description: "You've already added this post to your pond",
+              variant: "destructive",
+            });
+            return;
+          }
+          throw insertError;
+        }
         
         // Find the post's author
         const post = posts.find(p => p.id === postId);
@@ -176,13 +189,14 @@ export default function Feed() {
         <div className="flex gap-2 p-4 border-b border-border">
           <button
             onClick={() => setActiveTab('snapshots')}
-            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
+            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-1 ${
               activeTab === 'snapshots'
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
             }`}
           >
-            📸 Snapshots
+            <Camera className="h-4 w-4" />
+            Snapshots
           </button>
           <button
             onClick={() => setActiveTab('dailys')}
