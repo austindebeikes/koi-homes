@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,36 +6,36 @@
 
 @layer base {
   :root {
-    --background: 31 48% 88%; /* #F4E4CF */
+    --background: 31 50% 88%; /* #F4E4CF */
     --foreground: 0 0% 11%;
-    
+
     --card: 32 45% 93%;
     --card-foreground: 0 0% 11%;
-    
+
     --popover: 32 45% 93%;
     --popover-foreground: 0 0% 11%;
-    
+
     --primary: 180 50% 25%;
     --primary-foreground: 28 35% 92%;
-    
+
     --secondary: 28 35% 88%;
     --secondary-foreground: 0 0% 11%;
-    
+
     --muted: 28 35% 88%;
     --muted-foreground: 0 0% 31%;
-    
+
     --accent: 18 80% 60%;
     --accent-foreground: 0 0% 100%;
-    
+
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    
+
     --border: 28 30% 85%;
     --input: 28 30% 90%;
     --ring: 180 50% 25%;
-    
+
     --dailys-bg: 30 30% 95%;
-    
+
     --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
@@ -58,34 +58,34 @@
   .dark {
     --background: 180 50% 8%;
     --foreground: 28 35% 92%;
-    
+
     --card: 180 50% 12%;
     --card-foreground: 28 35% 92%;
-    
+
     --popover: 180 50% 12%;
     --popover-foreground: 28 35% 92%;
-    
+
     --primary: 180 50% 35%;
     --primary-foreground: 28 35% 92%;
-    
+
     --secondary: 180 30% 18%;
     --secondary-foreground: 28 35% 92%;
-    
+
     --muted: 180 30% 18%;
     --muted-foreground: 28 35% 75%;
-    
+
     --accent: 18 80% 60%;
     --accent-foreground: 0 0% 100%;
-    
+
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    
+
     --border: 180 30% 20%;
     --input: 180 30% 20%;
     --ring: 180 50% 35%;
-    
+
     --dailys-bg: 30 30% 15%;
-    
+
     --sidebar-background: 0 0% 7%;
     --sidebar-foreground: 0 0% 96%;
     --sidebar-primary: 15 100% 60%;
@@ -101,13 +101,23 @@
   * {
     @apply border-border;
   }
-  
+
   body {
     @apply bg-background text-foreground;
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family:
+      "Poppins",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply text-foreground font-semibold;
   }
 }
