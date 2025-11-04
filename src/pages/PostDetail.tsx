@@ -7,7 +7,8 @@ import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Heart, Send, ArrowLeft } from 'lucide-react';
+import { Heart, Send, ArrowLeft, Bookmark, MessageCircle } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Post {
   id: string;
@@ -44,6 +45,7 @@ export default function PostDetail() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [likeCount, setLikeCount] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -96,6 +98,17 @@ export default function PostDetail() {
 
         if (userLikeError) throw userLikeError;
         setIsLiked(!!userLike);
+
+        // Check if current user saved
+        const { data: userSave, error: userSaveError } = await supabase
+          .from('saved_posts')
+          .select('id')
+          .eq('post_id', id)
+          .eq('user_id', profile.id)
+          .maybeSingle();
+
+        if (userSaveError) throw userSaveError;
+        setIsSaved(!!userSave);
       }
     } catch (error: any) {
       console.error('Error loading post:', error);
@@ -105,7 +118,7 @@ export default function PostDetail() {
   };
 
   const handleLikeToggle = async () => {
-    if (!profile?.id) return;
+    if (!profile?.id || !post) return;
 
     try {
       if (isLiked) {
@@ -128,9 +141,65 @@ export default function PostDetail() {
         if (error) throw error;
         setIsLiked(true);
         setLikeCount(prev => prev + 1);
+
+        // Create notification for the post author
+        if (post.user_id !== profile.id) {
+          await supabase
+            .from('notifications')
+            .insert({
+              user_id: post.user_id,
+              type: 'like',
+              message: `${profile.first_name} ${profile.last_name} liked your post`,
+              related_user_id: profile.id,
+              related_post_id: id,
+            });
+        }
       }
     } catch (error: any) {
       console.error('Error toggling like:', error);
+    }
+  };
+
+  const handleSaveToggle = async () => {
+    if (!profile?.id || !post) return;
+
+    try {
+      if (isSaved) {
+        // Unsave
+        const { error } = await supabase
+          .from('saved_posts')
+          .delete()
+          .eq('post_id', id)
+          .eq('user_id', profile.id);
+
+        if (error) throw error;
+        setIsSaved(false);
+        toast.success('Removed from saved snapshots');
+      } else {
+        // Save
+        const { error } = await supabase
+          .from('saved_posts')
+          .insert({ post_id: id, user_id: profile.id });
+
+        if (error) throw error;
+        setIsSaved(true);
+        toast.success('Added to saved snapshots');
+
+        // Create notification for the post author
+        if (post.user_id !== profile.id) {
+          await supabase
+            .from('notifications')
+            .insert({
+              user_id: post.user_id,
+              type: 'save',
+              message: `${profile.first_name} ${profile.last_name} saved your post`,
+              related_user_id: profile.id,
+              related_post_id: id,
+            });
+        }
+      }
+    } catch (error: any) {
+      console.error('Error toggling save:', error);
     }
   };
 
@@ -230,16 +299,36 @@ export default function PostDetail() {
           <p className="mb-4 text-foreground">{post.caption}</p>
         )}
 
-        {/* Like Button */}
-        <div className="flex items-center gap-4 mb-6">
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2 mb-6">
           <Button
             variant={isLiked ? "default" : "outline"}
             size="sm"
             onClick={handleLikeToggle}
-            className="gap-2"
+            className="gap-1.5"
           >
-            <Heart className={isLiked ? "fill-current" : ""} />
-            {likeCount} {likeCount === 1 ? 'like' : 'likes'}
+            <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
+            <span>{likeCount}</span>
+          </Button>
+          
+          <Button
+            variant="accent"
+            size="sm"
+            onClick={() => navigate(`/chat/${post.users.id}`)}
+            className="gap-1.5"
+          >
+            <MessageCircle className="h-4 w-4" />
+            <span>Message Agent</span>
+          </Button>
+
+          <Button
+            variant={isSaved ? "default" : "outline"}
+            size="sm"
+            onClick={handleSaveToggle}
+            className="gap-1.5 ml-auto"
+          >
+            <Bookmark className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
+            <span>{isSaved ? 'Saved' : 'Save'}</span>
           </Button>
         </div>
 

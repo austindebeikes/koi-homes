@@ -6,9 +6,9 @@ import { AppHeader } from '@/components/AppHeader';
 import { BottomNav } from '@/components/BottomNav';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DailyCard } from '@/components/DailyCard';
-import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Camera, Heart, MessageCircle } from 'lucide-react';
+import { Camera, Heart, MessageCircle, Bookmark } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Post {
   id: string;
@@ -27,12 +27,12 @@ interface Post {
   };
   likesCount?: number;
   userLiked?: boolean;
+  userSaved?: boolean;
 }
 
 export default function Feed() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'snapshots' | 'dailys'>('snapshots');
@@ -64,7 +64,7 @@ export default function Feed() {
 
       if (error) throw error;
       
-      // Get like counts and check if user liked each post
+      // Get like counts and check if user liked/saved each post
       const postsWithLikes = await Promise.all((data || []).map(async (post) => {
         // Get total likes count
         const { count: likesCount } = await supabase
@@ -74,6 +74,7 @@ export default function Feed() {
         
         // Check if current user liked this post
         let userLiked = false;
+        let userSaved = false;
         if (profile?.id) {
           const { data: likeData } = await supabase
             .from('likes')
@@ -82,12 +83,21 @@ export default function Feed() {
             .eq('post_id', post.id)
             .maybeSingle();
           userLiked = !!likeData;
+
+          const { data: saveData } = await supabase
+            .from('saved_posts')
+            .select('id')
+            .eq('user_id', profile.id)
+            .eq('post_id', post.id)
+            .maybeSingle();
+          userSaved = !!saveData;
         }
 
         return {
           ...post,
           likesCount: likesCount || 0,
           userLiked,
+          userSaved,
         };
       }));
 
@@ -139,13 +149,66 @@ export default function Feed() {
           return {
             ...post,
             userLiked: !currentlyLiked,
-            likesCount: currentlyLiked ? post.likesCount - 1 : post.likesCount + 1,
+            likesCount: currentlyLiked ? (post.likesCount || 0) - 1 : (post.likesCount || 0) + 1,
           };
         }
         return post;
       }));
     } catch (error) {
       console.error('Error toggling like:', error);
+    }
+  };
+
+  const handleSaveToggle = async (postId: string, currentlySaved: boolean) => {
+    if (!profile?.id) return;
+
+    try {
+      if (currentlySaved) {
+        // Unsave
+        await supabase
+          .from('saved_posts')
+          .delete()
+          .eq('post_id', postId)
+          .eq('user_id', profile.id);
+        
+        toast.success('Removed from saved snapshots');
+      } else {
+        // Save
+        const { error: insertError } = await supabase
+          .from('saved_posts')
+          .insert({ post_id: postId, user_id: profile.id });
+        
+        if (insertError) throw insertError;
+        
+        toast.success('Added to saved snapshots');
+        
+        // Create notification for the post author
+        const post = posts.find(p => p.id === postId);
+        if (post && post.user_id !== profile.id) {
+          await supabase
+            .from('notifications')
+            .insert({
+              user_id: post.user_id,
+              type: 'save',
+              message: `${profile.first_name} ${profile.last_name} saved your post`,
+              related_user_id: profile.id,
+              related_post_id: postId,
+            });
+        }
+      }
+
+      // Update local state
+      setPosts(posts.map(post => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            userSaved: !currentlySaved,
+          };
+        }
+        return post;
+      }));
+    } catch (error) {
+      console.error('Error toggling save:', error);
     }
   };
 
@@ -287,6 +350,18 @@ export default function Feed() {
                       >
                         <MessageCircle className="h-4 w-4" />
                         <span>Message Agent</span>
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        variant={post.userSaved ? "default" : "outline"}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSaveToggle(post.id, post.userSaved || false);
+                        }}
+                        className="gap-1.5"
+                      >
+                        <Bookmark className={`h-4 w-4 ${post.userSaved ? 'fill-current' : ''}`} />
                       </Button>
                     </div>
                   </div>

@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Camera } from 'lucide-react';
+import { Plus, Camera, Bookmark } from 'lucide-react';
 import { ServiceManager } from '@/components/ServiceManager';
 import { DailyCard } from '@/components/DailyCard';
 import {
@@ -27,6 +27,7 @@ export default function Profile() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [posts, setPosts] = useState<any[]>([]);
+  const [savedPosts, setSavedPosts] = useState<any[]>([]);
   const [dailyPost, setDailyPost] = useState<any>(null);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
@@ -37,6 +38,7 @@ export default function Profile() {
   useEffect(() => {
     if (profile?.id) {
       loadPosts();
+      loadSavedPosts();
       loadFollowCounts();
       loadDaily();
       setServices((profile as any).services || []);
@@ -59,6 +61,37 @@ export default function Profile() {
     }
     
     setPosts(data || []);
+  };
+
+  const loadSavedPosts = async () => {
+    if (!profile?.id) return;
+    
+    const { data, error } = await supabase
+      .from('saved_posts')
+      .select(`
+        post_id,
+        posts (
+          id,
+          photo_url,
+          caption,
+          created_at,
+          user_id,
+          users (
+            first_name,
+            last_name,
+            profile_photo_url
+          )
+        )
+      `)
+      .eq('user_id', profile.id)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error loading saved posts:', error);
+      return;
+    }
+    
+    setSavedPosts(data?.map(item => item.posts).filter(Boolean) || []);
   };
 
   const loadDaily = async () => {
@@ -269,6 +302,12 @@ export default function Profile() {
               <Camera className="h-4 w-4" />
               Snapshots
             </TabsTrigger>
+            {profile.role === 'Buyer' && (
+              <TabsTrigger value="saved" className="flex-1 gap-1">
+                <Bookmark className="h-4 w-4" />
+                Saved
+              </TabsTrigger>
+            )}
             {profile.role === 'Agent' && (
               <TabsTrigger value="services" className="flex-1">Services</TabsTrigger>
             )}
@@ -306,6 +345,28 @@ export default function Profile() {
                 )}
               </div>
             </TabsContent>
+
+            {profile.role === 'Buyer' && (
+              <TabsContent value="saved" className="p-1">
+                <div className="grid grid-cols-2 gap-1">
+                  {savedPosts.length > 0 ? (
+                    savedPosts.map((post: any) => (
+                      <img
+                        key={post.id}
+                        src={post.photo_url}
+                        alt={post.caption || 'Saved post'}
+                        className="w-full aspect-square object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => navigate(`/post/${post.id}`)}
+                      />
+                    ))
+                  ) : (
+                    <p className="col-span-2 text-center text-muted-foreground py-8">
+                      No saved snapshots yet. Save posts from your feed!
+                    </p>
+                  )}
+                </div>
+              </TabsContent>
+            )}
 
             {profile.role === 'Agent' && (
               <TabsContent value="services" className="p-4">

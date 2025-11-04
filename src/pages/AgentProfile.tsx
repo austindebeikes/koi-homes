@@ -309,7 +309,8 @@ export default function AgentProfile() {
                     key={post.id}
                     src={post.photo_url}
                     alt={post.caption || 'Post'}
-                    className="w-full aspect-square object-cover rounded"
+                    className="w-full aspect-square object-cover rounded cursor-pointer hover:opacity-90 transition-opacity"
+                    onClick={() => navigate(`/post/${post.id}`)}
                   />
                 ))
               ) : (
