@@ -284,10 +284,15 @@ export default function Feed() {
           ) : (
             // Snapshots view
             filteredPosts.map((post) => (
-              <div key={post.id} className="mb-6 bg-card rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.08)] overflow-hidden border border-border/50">
+              <div 
+                key={post.id} 
+                className="mb-6 bg-card rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.08)] overflow-hidden border border-border/50 cursor-pointer"
+                onClick={() => navigate(`/post/${post.id}`)}
+              >
                 <div 
-                  className="flex items-center gap-3 p-4 cursor-pointer hover:bg-muted/30 transition-colors"
-                  onClick={() => {
+                  className="flex items-center gap-3 p-4 hover:bg-muted/30 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
                     if (post.users.id === profile?.id) {
                       navigate('/profile');
                     } else {
@@ -309,7 +314,7 @@ export default function Feed() {
                   <img
                     src={post.photo_url}
                     alt="Post"
-                    className="w-full aspect-square object-cover rounded-lg"
+                    className="w-full aspect-square object-cover"
                   />
                 )}
 

@@ -296,22 +296,42 @@ export default function Profile() {
           </div>
         </div>
 
-        <Tabs defaultValue="snapshots" className="w-full">
-          <TabsList className="w-full">
-            <TabsTrigger value="snapshots" className="flex-1 gap-1">
-              <Camera className="h-4 w-4" />
-              Snapshots
-            </TabsTrigger>
-            {profile.role === 'Buyer' && (
-              <TabsTrigger value="saved" className="flex-1 gap-1">
-                <Bookmark className="h-4 w-4" />
-                Saved
+        {/* Buyers: Simple saved posts section without tabs */}
+        {profile.role === 'Buyer' && (
+          <div className="p-4">
+            <h3 className="text-sm font-semibold mb-3 text-muted-foreground">
+              Saved snapshots
+            </h3>
+            <div className="grid grid-cols-2 gap-1">
+              {savedPosts.length > 0 ? (
+                savedPosts.map((post: any) => (
+                  <img
+                    key={post.id}
+                    src={post.photo_url}
+                    alt={post.caption || 'Saved post'}
+                    className="w-full aspect-square object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                    onClick={() => navigate(`/post/${post.id}`)}
+                  />
+                ))
+              ) : (
+                <p className="col-span-2 text-center text-muted-foreground py-8">
+                  No saved snapshots yet. Save posts from your feed!
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Agents: Tabs for snapshots and services */}
+        {profile.role === 'Agent' && (
+          <Tabs defaultValue="snapshots" className="w-full">
+            <TabsList className="w-full">
+              <TabsTrigger value="snapshots" className="flex-1 gap-1">
+                <Camera className="h-4 w-4" />
+                Snapshots
               </TabsTrigger>
-            )}
-            {profile.role === 'Agent' && (
               <TabsTrigger value="services" className="flex-1">Services</TabsTrigger>
-            )}
-          </TabsList>
+            </TabsList>
 
             <TabsContent value="snapshots" className="p-1">
               <div className="grid grid-cols-2 gap-1">
@@ -319,18 +339,19 @@ export default function Profile() {
                   posts.map((post) => (
                     <div 
                       key={post.id} 
-                      className="relative group"
+                      className="relative group cursor-pointer"
+                      onClick={() => navigate(`/post/${post.id}`)}
                       onMouseDown={() => handleMouseDown(post.id)}
                       onMouseUp={handleMouseUp}
                       onMouseLeave={handleMouseUp}
                       onTouchStart={() => handleMouseDown(post.id)}
                       onTouchEnd={handleMouseUp}
                     >
-                    <img
-                      src={post.photo_url}
-                      alt={post.caption || 'Post'}
-                      className="w-full aspect-square object-cover rounded-lg"
-                    />
+                      <img
+                        src={post.photo_url}
+                        alt={post.caption || 'Post'}
+                        className="w-full aspect-square object-cover rounded-lg"
+                      />
                       {post.caption && (
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2 rounded-lg">
                           <p className="text-white text-xs line-clamp-2">{post.caption}</p>
@@ -346,37 +367,14 @@ export default function Profile() {
               </div>
             </TabsContent>
 
-            {profile.role === 'Buyer' && (
-              <TabsContent value="saved" className="p-1">
-                <div className="grid grid-cols-2 gap-1">
-                  {savedPosts.length > 0 ? (
-                    savedPosts.map((post: any) => (
-                      <img
-                        key={post.id}
-                        src={post.photo_url}
-                        alt={post.caption || 'Saved post'}
-                        className="w-full aspect-square object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                        onClick={() => navigate(`/post/${post.id}`)}
-                      />
-                    ))
-                  ) : (
-                    <p className="col-span-2 text-center text-muted-foreground py-8">
-                      No saved snapshots yet. Save posts from your feed!
-                    </p>
-                  )}
-                </div>
-              </TabsContent>
-            )}
-
-            {profile.role === 'Agent' && (
-              <TabsContent value="services" className="p-4">
-                <ServiceManager 
-                  services={services} 
-                  onServicesChange={setServices} 
-                />
-              </TabsContent>
-            )}
+            <TabsContent value="services" className="p-4">
+              <ServiceManager 
+                services={services} 
+                onServicesChange={setServices} 
+              />
+            </TabsContent>
           </Tabs>
+        )}
 
         <AlertDialog open={!!deletePostId} onOpenChange={(open) => !open && setDeletePostId(null)}>
           <AlertDialogContent>

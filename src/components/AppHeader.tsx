@@ -1,4 +1,5 @@
 import { NotificationBell } from './NotificationBell';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AppHeaderProps {
   title?: string;
@@ -6,6 +7,9 @@ interface AppHeaderProps {
 }
 
 export const AppHeader = ({ title, showLogo = true }: AppHeaderProps) => {
+  const { profile } = useAuth();
+  const isAgent = profile?.role === 'Agent';
+
   return (
     <header className="sticky top-0 z-40 bg-background border-b border-border">
       <div className="max-w-md mx-auto px-4 h-14 flex items-center justify-between">
@@ -16,7 +20,7 @@ export const AppHeader = ({ title, showLogo = true }: AppHeaderProps) => {
         {title && !showLogo && (
           <h1 className="text-xl font-koi-script text-primary">{title}</h1>
         )}
-        <NotificationBell />
+        {isAgent ? <NotificationBell /> : <div className="w-10" />}
       </div>
     </header>
   );
