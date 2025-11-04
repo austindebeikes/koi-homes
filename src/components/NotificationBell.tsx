@@ -112,7 +112,19 @@ export const NotificationBell = () => {
     setOpen(false);
     
     if (notification.related_user_id) {
-      navigate(`/agent/${notification.related_user_id}`);
+      // Fetch the related user's role to route correctly
+      const { data: userData } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', notification.related_user_id)
+        .single();
+      
+      // Route to agent profile for agents, otherwise use generic profile route
+      if (userData?.role === 'Agent') {
+        navigate(`/agent/${notification.related_user_id}`);
+      } else {
+        navigate(`/profile/${notification.related_user_id}`);
+      }
     }
   };
 

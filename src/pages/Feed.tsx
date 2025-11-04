@@ -121,12 +121,18 @@ export default function Feed() {
           .eq('post_id', postId)
           .eq('user_id', profile.id);
       } else {
-        // Like
+        // Like (with upsert to prevent duplicates)
         const { error: insertError } = await supabase
           .from('likes')
-          .insert({ post_id: postId, user_id: profile.id });
+          .upsert({ 
+            post_id: postId, 
+            user_id: profile.id 
+          }, {
+            onConflict: 'user_id,post_id',
+            ignoreDuplicates: true
+          });
         
-        if (insertError) throw insertError;
+        if (insertError && insertError.code !== '23505') throw insertError;
         
         // Create notification for the post author
         const post = posts.find(p => p.id === postId);

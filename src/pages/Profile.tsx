@@ -299,11 +299,11 @@ export default function Profile() {
         {/* Buyers: Simple saved posts section without tabs */}
         {profile.role === 'Buyer' && (
           <div className="p-4">
-            <h3 className="text-sm font-semibold mb-3 text-muted-foreground flex items-center gap-2">
-              <Camera className="h-4 w-4" />
+            <h3 className="text-center text-base font-semibold mb-4 flex items-center justify-center gap-2">
+              <Camera className="h-5 w-5 text-primary" />
               Saved snapshots
             </h3>
-            <div className="grid grid-cols-2 gap-1">
+            <div className="grid grid-cols-3 gap-1">
               {savedPosts.length > 0 ? (
                 savedPosts.map((post: any) => (
                   <img
@@ -315,7 +315,7 @@ export default function Profile() {
                   />
                 ))
               ) : (
-                <p className="col-span-2 text-center text-muted-foreground py-8">
+                <p className="col-span-3 text-center text-muted-foreground py-8">
                   No saved snapshots yet. Save posts from your feed!
                 </p>
               )}
