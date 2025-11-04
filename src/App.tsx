@@ -17,6 +17,7 @@ import NewPost from "./pages/NewPost";
 import PostDetail from "./pages/PostDetail";
 import Likes from "./pages/Likes";
 import Pond from "./pages/Pond";
+import Meetings from "./pages/Meetings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/post/:id" element={<PostDetail />} />
             <Route path="/likes" element={<Likes />} />
             <Route path="/pond" element={<Pond />} />
+            <Route path="/meetings" element={<Meetings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

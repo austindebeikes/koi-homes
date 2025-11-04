@@ -66,9 +66,9 @@ export default function Feed() {
       
       // Get like counts and check if user liked/saved each post
       const postsWithLikes = await Promise.all((data || []).map(async (post) => {
-        // Get total likes count
+        // Get total likes count from post_likes table
         const { count: likesCount } = await supabase
-          .from('likes')
+          .from('post_likes')
           .select('*', { count: 'exact', head: true })
           .eq('post_id', post.id);
         
@@ -77,7 +77,7 @@ export default function Feed() {
         let userSaved = false;
         if (profile?.id) {
           const { data: likeData } = await supabase
-            .from('likes')
+            .from('post_likes')
             .select('id')
             .eq('user_id', profile.id)
             .eq('post_id', post.id)
@@ -114,38 +114,47 @@ export default function Feed() {
 
     try {
       if (currentlyLiked) {
-        // Unlike
+        // Unlike - delete the like
         await supabase
-          .from('likes')
+          .from('post_likes')
           .delete()
           .eq('post_id', postId)
           .eq('user_id', profile.id);
       } else {
-        // Like
-        const { error: insertError } = await supabase
-          .from('likes')
-          .insert({ post_id: postId, user_id: profile.id });
-        
-        if (insertError) throw insertError;
-        
-        // Create notification for the post author
-        const post = posts.find(p => p.id === postId);
-        if (post && post.user_id !== profile.id) {
-          await supabase
-            .from('notifications')
-            .insert({
-              user_id: post.user_id,
-              type: 'like',
-              message: `${profile.first_name} ${profile.last_name} liked your post`,
-              related_user_id: profile.id,
-              related_post_id: postId,
-            });
+        // Like - check first, then insert
+        const { data: existingLike } = await supabase
+          .from('post_likes')
+          .select('id')
+          .eq('post_id', postId)
+          .eq('user_id', profile.id)
+          .maybeSingle();
+
+        if (!existingLike) {
+          const { error: insertError } = await supabase
+            .from('post_likes')
+            .insert({ post_id: postId, user_id: profile.id });
+          
+          if (insertError) throw insertError;
+          
+          // Create notification for the post author
+          const post = posts.find(p => p.id === postId);
+          if (post && post.user_id !== profile.id) {
+            await supabase
+              .from('notifications')
+              .insert({
+                user_id: post.user_id,
+                type: 'like',
+                message: `${profile.first_name} ${profile.last_name} liked your post`,
+                related_user_id: profile.id,
+                related_post_id: postId,
+              });
+          }
         }
       }
 
       // Reload like count from database to be accurate
       const { count: newLikeCount } = await supabase
-        .from('likes')
+        .from('post_likes')
         .select('*', { count: 'exact', head: true })
         .eq('post_id', postId);
 

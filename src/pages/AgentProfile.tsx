@@ -153,12 +153,23 @@ export default function AgentProfile() {
     if (!selectedDate || !selectedTime || !profile?.id || !id) return;
 
     try {
+      // Insert into meetings table
       await supabase
-        .from('intros')
+        .from('meetings')
         .insert({
           buyer_id: profile.id,
           agent_id: id,
           type: scheduleType,
+        });
+
+      // Create notification for the agent
+      await supabase
+        .from('notifications')
+        .insert({
+          user_id: id,
+          type: 'meeting_request',
+          message: `${profile.first_name} ${profile.last_name} requested a ${scheduleType === 'coffee' ? 'Coffee Chat' : 'Video Call'}`,
+          related_user_id: profile.id,
         });
 
       setShowScheduleDialog(false);
@@ -195,9 +206,12 @@ export default function AgentProfile() {
     );
   }
 
+  const isBuyer = agent.role === 'Buyer';
+  const isAgent = agent.role === 'Agent';
+
   return (
     <div className="min-h-screen bg-background pb-20">
-      <AppHeader title="Agent Profile" showLogo={false} />
+      <AppHeader title={isBuyer ? "Buyer Profile" : "Agent Profile"} showLogo={false} />
 
       <div className="max-w-md mx-auto">
         <div className="p-6 space-y-4">
@@ -223,7 +237,7 @@ export default function AgentProfile() {
           </div>
 
           <div className="flex gap-2">
-            {profile?.id !== id && (
+            {profile?.id !== id && !isBuyer && (
               <Button
                 variant={isFollowing ? "outline" : "default"}
                 className="flex-1"
@@ -233,19 +247,19 @@ export default function AgentProfile() {
                 {isFollowing ? 'Following' : 'Follow'}
               </Button>
             )}
-            {agent.role === 'Agent' && (
+            {profile?.id !== id && (
               <Button 
                 className="flex-1" 
                 size="lg"
                 onClick={() => navigate(`/chat/${agent.id}`)}
               >
                 <MessageCircle className="mr-2 h-5 w-5" />
-                Message Agent
+                Message
               </Button>
             )}
           </div>
 
-          {profile?.id !== id && agent.role === 'Agent' && (
+          {profile?.id !== id && isAgent && (
             <>
               <div className="flex gap-2">
                 <Button
@@ -295,13 +309,27 @@ export default function AgentProfile() {
           </div>
         </div>
 
-        <Tabs defaultValue="snapshots" className="w-full">
-          <TabsList className="w-full">
-            <TabsTrigger value="snapshots" className="flex-1">Snapshots</TabsTrigger>
-            {agent.role === 'Agent' && (
-              <TabsTrigger value="services" className="flex-1">Services</TabsTrigger>
-            )}
-          </TabsList>
+        {/* For buyers: show only saved snapshots */}
+        {isBuyer && profile?.id !== id && (
+          <div className="p-4">
+            <h3 className="text-center font-semibold mb-3">Saved snapshots</h3>
+            <div className="grid grid-cols-2 gap-1">
+              <p className="col-span-2 text-center text-muted-foreground py-8">
+                No saved snapshots
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* For agents or own profile: show tabs */}
+        {(isAgent || profile?.id === id) && (
+          <Tabs defaultValue="snapshots" className="w-full">
+            <TabsList className="w-full">
+              <TabsTrigger value="snapshots" className="flex-1">Snapshots</TabsTrigger>
+              {isAgent && (
+                <TabsTrigger value="services" className="flex-1">Services</TabsTrigger>
+              )}
+            </TabsList>
 
           <TabsContent value="snapshots" className="p-1">
             <div className="grid grid-cols-2 gap-1">
@@ -323,47 +351,48 @@ export default function AgentProfile() {
             </div>
           </TabsContent>
 
-          {agent.role === 'Agent' && (
-            <TabsContent value="services" className="p-4">
-              <div className="flex flex-wrap gap-2">
-                {((agent as any).services || []).length > 0 ? (
-                  ((agent as any).services || []).map((service: string, index: number) => {
-                    // Get emoji for service
-                    const getEmoji = (service: string) => {
-                      const serviceEmojis: { [key: string]: string } = {
-                        'First-time buyers': '🏡',
-                        'VA loans': '🎖️',
-                        'Relocation': '✈️',
-                        'Off-market deals': '🔑',
-                        'Coastal expert': '🌴',
-                        'Luxury homes': '💎',
-                        'Investment properties': '📈',
-                        'Commercial real estate': '🏢',
-                        'New construction': '🏗️',
-                        'Foreclosures': '🔨',
-                      };
-                      for (const [key, emoji] of Object.entries(serviceEmojis)) {
-                        if (service.toLowerCase().includes(key.toLowerCase())) {
-                          return emoji;
+            {isAgent && (
+              <TabsContent value="services" className="p-4">
+                <div className="flex flex-wrap gap-2">
+                  {((agent as any).services || []).length > 0 ? (
+                    ((agent as any).services || []).map((service: string, index: number) => {
+                      // Get emoji for service
+                      const getEmoji = (service: string) => {
+                        const serviceEmojis: { [key: string]: string } = {
+                          'First-time buyers': '🏡',
+                          'VA loans': '🎖️',
+                          'Relocation': '✈️',
+                          'Off-market deals': '🔑',
+                          'Coastal expert': '🌴',
+                          'Luxury homes': '💎',
+                          'Investment properties': '📈',
+                          'Commercial real estate': '🏢',
+                          'New construction': '🏗️',
+                          'Foreclosures': '🔨',
+                        };
+                        for (const [key, emoji] of Object.entries(serviceEmojis)) {
+                          if (service.toLowerCase().includes(key.toLowerCase())) {
+                            return emoji;
+                          }
                         }
-                      }
-                      return '⭐';
-                    };
+                        return '⭐';
+                      };
 
-                    return (
-                      <span key={index} className="px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-1">
-                        <span>{getEmoji(service)}</span>
-                        <span>{service}</span>
-                      </span>
-                    );
-                  })
-                ) : (
-                  <p className="text-muted-foreground text-sm">No services listed yet</p>
-                )}
-              </div>
-            </TabsContent>
-          )}
-        </Tabs>
+                      return (
+                        <span key={index} className="px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-1">
+                          <span>{getEmoji(service)}</span>
+                          <span>{service}</span>
+                        </span>
+                      );
+                    })
+                  ) : (
+                    <p className="text-muted-foreground text-sm">No services listed yet</p>
+                  )}
+                </div>
+              </TabsContent>
+            )}
+          </Tabs>
+        )}
       </div>
 
       <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>

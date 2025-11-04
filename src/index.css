@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --background: 32 50% 95%; /* #E6D2B3 */
+    --background: 42 60% 93%; /* #F6f0df */
     --foreground: 0 0% 11%;
 
     --card: 32 45% 93%;
@@ -139,5 +139,11 @@ textarea:focus {
 input,
 textarea {
   background-color: hsl(0 0% 100%);
-  border: 1px solid hsl(32 30% 82%);
+  border: 1px solid hsl(40 25% 85%);
+  border-radius: 0.5rem;
+}
+
+input:focus,
+textarea:focus {
+  border-color: hsl(180 50% 25%) !important;
 }

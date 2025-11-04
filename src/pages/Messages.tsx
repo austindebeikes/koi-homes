@@ -44,22 +44,16 @@ export default function Messages() {
 
       // Group messages by conversation partner
       const conversationMap = new Map<string, any>();
-      const lastSentMap = new Map<string, Date>();
       
       for (const msg of messages || []) {
         const otherUserId = msg.sender_id === profile.id ? msg.receiver_id : msg.sender_id;
-        
-        // Track last message from user to this partner
-        if (msg.sender_id === profile.id && !lastSentMap.has(otherUserId)) {
-          lastSentMap.set(otherUserId, new Date(msg.created_at));
-        }
         
         if (!conversationMap.has(otherUserId)) {
           conversationMap.set(otherUserId, {
             other_user_id: otherUserId,
             last_message: msg.body,
             last_message_time: msg.created_at,
-            last_message_from_other: msg.sender_id !== profile.id,
+            is_unread: msg.receiver_id === profile.id && !msg.is_read,
           });
         }
       }
@@ -81,11 +75,6 @@ export default function Messages() {
       // Combine conversation data with user details
       const conversationsData = users?.map(user => {
         const convData = conversationMap.get(user.id);
-        const lastSent = lastSentMap.get(user.id);
-        const lastMsgTime = new Date(convData.last_message_time);
-        
-        // Unread if: message from other person AND (no sent message OR their message is newer)
-        const isUnread = convData.last_message_from_other && (!lastSent || lastMsgTime > lastSent);
         
         return {
           id: user.id,
@@ -95,7 +84,7 @@ export default function Messages() {
           profile_photo_url: user.profile_photo_url,
           last_message: convData.last_message,
           last_message_time: convData.last_message_time,
-          isUnread,
+          isUnread: convData.is_unread,
         };
       }) || [];
 

@@ -35,8 +35,21 @@ export default function Chat() {
   useEffect(() => {
     if (id && profile?.id) {
       loadChatData();
+      markMessagesAsRead();
     }
   }, [id, profile?.id]);
+
+  const markMessagesAsRead = async () => {
+    if (!id || !profile?.id) return;
+
+    // Mark all messages from this user as read
+    await supabase
+      .from('messages')
+      .update({ is_read: true })
+      .eq('sender_id', id)
+      .eq('receiver_id', profile.id)
+      .eq('is_read', false);
+  };
 
   const loadChatData = async () => {
     if (!id || !profile?.id) return;

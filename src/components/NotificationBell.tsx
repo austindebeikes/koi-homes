@@ -112,7 +112,17 @@ export const NotificationBell = () => {
     setOpen(false);
     
     if (notification.related_user_id) {
+      // Get the user's role to route correctly
+      const { data: userData } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', notification.related_user_id)
+        .single();
+      
+      // Route to agent profile for all users (it will show buyer view if they're a buyer)
       navigate(`/agent/${notification.related_user_id}`);
+    } else if (notification.type === 'meeting_request') {
+      navigate('/meetings');
     }
   };
 

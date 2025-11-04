@@ -78,9 +78,9 @@ export default function PostDetail() {
       if (commentsError) throw commentsError;
       setComments(commentsData || []);
 
-      // Load likes count
+      // Load likes count from post_likes
       const { count, error: likesCountError } = await supabase
-        .from('likes')
+        .from('post_likes')
         .select('*', { count: 'exact', head: true })
         .eq('post_id', id);
 
@@ -90,7 +90,7 @@ export default function PostDetail() {
       // Check if current user liked
       if (profile?.id) {
         const { data: userLike, error: userLikeError } = await supabase
-          .from('likes')
+          .from('post_likes')
           .select('id')
           .eq('post_id', id)
           .eq('user_id', profile.id)
@@ -122,43 +122,50 @@ export default function PostDetail() {
 
     try {
       if (isLiked) {
-        // Unlike
+        // Unlike - delete the like
         const { error } = await supabase
-          .from('likes')
+          .from('post_likes')
           .delete()
           .eq('post_id', id)
           .eq('user_id', profile.id);
 
         if (error) throw error;
         setIsLiked(false);
-        setLikeCount(prev => Math.max(0, prev - 1));
       } else {
-        // Like
-        const { error } = await supabase
-          .from('likes')
-          .insert({ post_id: id, user_id: profile.id });
+        // Like - check first, then insert
+        const { data: existingLike } = await supabase
+          .from('post_likes')
+          .select('id')
+          .eq('post_id', id)
+          .eq('user_id', profile.id)
+          .maybeSingle();
 
-        if (error) throw error;
-        setIsLiked(true);
-        setLikeCount(prev => prev + 1);
+        if (!existingLike) {
+          const { error } = await supabase
+            .from('post_likes')
+            .insert({ post_id: id, user_id: profile.id });
 
-        // Create notification for the post author
-        if (post.user_id !== profile.id) {
-          await supabase
-            .from('notifications')
-            .insert({
-              user_id: post.user_id,
-              type: 'like',
-              message: `${profile.first_name} ${profile.last_name} liked your post`,
-              related_user_id: profile.id,
-              related_post_id: id,
-            });
+          if (error) throw error;
+          setIsLiked(true);
+
+          // Create notification for the post author
+          if (post.user_id !== profile.id) {
+            await supabase
+              .from('notifications')
+              .insert({
+                user_id: post.user_id,
+                type: 'like',
+                message: `${profile.first_name} ${profile.last_name} liked your post`,
+                related_user_id: profile.id,
+                related_post_id: id,
+              });
+          }
         }
       }
 
       // Re-fetch like count to ensure accuracy
       const { count } = await supabase
-        .from('likes')
+        .from('post_likes')
         .select('*', { count: 'exact', head: true })
         .eq('post_id', id);
       
