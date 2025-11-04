@@ -133,18 +133,12 @@ export default function PostDetail() {
         setIsLiked(false);
         setLikeCount(prev => Math.max(0, prev - 1));
       } else {
-        // Like (with upsert to prevent duplicates)
+        // Like
         const { error } = await supabase
           .from('likes')
-          .upsert({ 
-            post_id: id, 
-            user_id: profile.id 
-          }, {
-            onConflict: 'user_id,post_id',
-            ignoreDuplicates: true
-          });
+          .insert({ post_id: id, user_id: profile.id });
 
-        if (error && error.code !== '23505') throw error;
+        if (error) throw error;
         setIsLiked(true);
         setLikeCount(prev => prev + 1);
 

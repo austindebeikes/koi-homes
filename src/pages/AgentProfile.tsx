@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { MessageCircle, Coffee, Film, Camera } from 'lucide-react';
+import { MessageCircle, Coffee, Film } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 
 interface AgentData {
@@ -28,11 +28,6 @@ interface Post {
   id: string;
   photo_url: string;
   caption: string;
-  user_id?: string;
-}
-
-interface Service {
-  name: string;
 }
 
 export default function AgentProfile() {
@@ -41,7 +36,6 @@ export default function AgentProfile() {
   const { profile } = useAuth();
   const [agent, setAgent] = useState<AgentData | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [savedPosts, setSavedPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
@@ -80,18 +74,6 @@ export default function AgentProfile() {
 
       if (postsError) throw postsError;
       setPosts(postsData || []);
-
-      // Load saved posts if viewing own profile
-      if (profile?.id === id) {
-        const { data: savedData, error: savedError } = await supabase
-          .from('saved_posts')
-          .select('post_id, posts(*)')
-          .eq('user_id', id);
-
-        if (!savedError && savedData) {
-          setSavedPosts(savedData.map(sp => sp.posts).filter(Boolean) as Post[]);
-        }
-      }
     } catch (error) {
       console.error('Error loading agent data:', error);
     } finally {
@@ -322,7 +304,7 @@ export default function AgentProfile() {
           </TabsList>
 
           <TabsContent value="snapshots" className="p-1">
-            <div className="grid grid-cols-3 gap-1">
+            <div className="grid grid-cols-2 gap-1">
               {posts.length > 0 ? (
                 posts.map((post) => (
                   <img
@@ -334,7 +316,7 @@ export default function AgentProfile() {
                   />
                 ))
               ) : (
-                <p className="col-span-3 text-center text-muted-foreground py-8">
+                <p className="col-span-2 text-center text-muted-foreground py-8">
                   No snapshots yet
                 </p>
               )}
@@ -382,27 +364,6 @@ export default function AgentProfile() {
             </TabsContent>
           )}
         </Tabs>
-
-        {/* Saved Snapshots Section for agent viewing own profile */}
-        {profile?.id === id && savedPosts.length > 0 && (
-          <div className="p-4 mt-4">
-            <h3 className="text-center text-base font-semibold mb-4 flex items-center justify-center gap-2">
-              <Camera className="h-5 w-5 text-primary" />
-              Saved snapshots
-            </h3>
-            <div className="grid grid-cols-3 gap-1">
-              {savedPosts.map((post) => (
-                <img
-                  key={post.id}
-                  src={post.photo_url}
-                  alt={post.caption || 'Saved post'}
-                  className="w-full aspect-square object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                  onClick={() => navigate(`/post/${post.id}`)}
-                />
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
