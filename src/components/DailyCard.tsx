@@ -23,7 +23,7 @@ export function DailyCard({ daily }: DailyCardProps) {
   const navigate = useNavigate();
 
   return (
-    <div className="rounded-2xl p-6 mb-4 bg-[hsl(var(--dailys-bg))] border border-border/50 shadow-[0_2px_8px_rgba(0,0,0,0.08)] animate-fade-in relative">
+    <div className="rounded-2xl p-6 mb-4 bg-card border border-border/50 shadow-[0_2px_8px_rgba(0,0,0,0.08)] animate-fade-in relative">
       {/* Daily's Badge */}
       <div className="absolute top-4 right-4">
         <div className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded-full text-xs font-semibold">
@@ -73,7 +73,7 @@ export function DailyCard({ daily }: DailyCardProps) {
           onClick={() => navigate(`/chat/${daily.users.id}`)}
         >
           <MessageCircle className="h-4 w-4" />
-          Message
+          Message Agent
         </Button>
       </div>
     </div>

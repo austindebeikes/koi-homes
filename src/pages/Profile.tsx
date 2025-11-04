@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Camera, Waves } from 'lucide-react';
+import { Plus, Camera } from 'lucide-react';
 import { ServiceManager } from '@/components/ServiceManager';
 import { DailyCard } from '@/components/DailyCard';
 import {
@@ -27,27 +27,21 @@ export default function Profile() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [posts, setPosts] = useState<any[]>([]);
-  const [savedPosts, setSavedPosts] = useState<any[]>([]);
   const [dailyPost, setDailyPost] = useState<any>(null);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [services, setServices] = useState<string[]>([]);
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
-  const isBuyer = profile?.role === 'Buyer';
 
   useEffect(() => {
     if (profile?.id) {
-      if (isBuyer) {
-        loadSavedPosts();
-      } else {
-        loadPosts();
-      }
+      loadPosts();
       loadFollowCounts();
       loadDaily();
       setServices((profile as any).services || []);
     }
-  }, [profile?.id, isBuyer]);
+  }, [profile?.id]);
 
   const loadPosts = async () => {
     if (!profile?.id) return;
@@ -65,39 +59,6 @@ export default function Profile() {
     }
     
     setPosts(data || []);
-  };
-
-  const loadSavedPosts = async () => {
-    if (!profile?.id) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('saved_posts')
-        .select(`
-          id,
-          post_id,
-          posts (
-            id,
-            photo_url,
-            caption,
-            user_id,
-            users (
-              id,
-              first_name,
-              last_name,
-              profile_photo_url,
-              city
-            )
-          )
-        `)
-        .eq('user_id', profile.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setSavedPosts(data || []);
-    } catch (error) {
-      console.error('Error loading saved posts:', error);
-    }
   };
 
   const loadDaily = async () => {
@@ -253,15 +214,6 @@ export default function Profile() {
               >
                 Edit
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => navigate('/pond')}
-                className="gap-1"
-              >
-                <Waves className="h-4 w-4" />
-                Pond
-              </Button>
             </div>
           </div>
 
@@ -273,7 +225,7 @@ export default function Profile() {
             </div>
           )}
 
-          {!isBuyer && (
+          {profile?.role === 'Agent' && (
             <Button 
               variant="accent"
               className="w-full" 
@@ -291,8 +243,8 @@ export default function Profile() {
 
           <div className="flex gap-8 text-center py-2">
             <div>
-              <p className="font-bold text-lg leading-tight">{isBuyer ? savedPosts.length : posts.length}</p>
-              <p className="text-xs text-muted-foreground">{isBuyer ? 'Pond' : 'Snapshots'}</p>
+              <p className="font-bold text-lg leading-tight">{posts.length}</p>
+              <p className="text-xs text-muted-foreground">Snapshots</p>
             </div>
             <div>
               <p className="font-bold text-lg leading-tight">{followerCount}</p>
@@ -311,17 +263,16 @@ export default function Profile() {
           </div>
         </div>
 
-        {!isBuyer && (
-          <Tabs defaultValue="snapshots" className="w-full">
-            <TabsList className="w-full">
-              <TabsTrigger value="snapshots" className="flex-1 gap-1">
-                <Camera className="h-4 w-4" />
-                Snapshots
-              </TabsTrigger>
-              {profile.role === 'Agent' && (
-                <TabsTrigger value="services" className="flex-1">Services</TabsTrigger>
-              )}
-            </TabsList>
+        <Tabs defaultValue="snapshots" className="w-full">
+          <TabsList className="w-full">
+            <TabsTrigger value="snapshots" className="flex-1 gap-1">
+              <Camera className="h-4 w-4" />
+              Snapshots
+            </TabsTrigger>
+            {profile.role === 'Agent' && (
+              <TabsTrigger value="services" className="flex-1">Services</TabsTrigger>
+            )}
+          </TabsList>
 
             <TabsContent value="snapshots" className="p-1">
               <div className="grid grid-cols-2 gap-1">
@@ -365,7 +316,6 @@ export default function Profile() {
               </TabsContent>
             )}
           </Tabs>
-        )}
 
         <AlertDialog open={!!deletePostId} onOpenChange={(open) => !open && setDeletePostId(null)}>
           <AlertDialogContent>

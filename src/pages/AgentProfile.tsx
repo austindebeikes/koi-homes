@@ -239,7 +239,7 @@ export default function AgentProfile() {
               onClick={() => navigate(`/chat/${agent.id}`)}
             >
               <MessageCircle className="mr-2 h-5 w-5" />
-              Message
+              Message Agent
             </Button>
           </div>
 

@@ -84,7 +84,7 @@ export default function Auth() {
             bio: isAgent 
               ? 'Helping clients buy and sell homes. Passionate about real estate and connecting people with their dream properties.'
               : 'Looking for my dream home.',
-            profile_photo_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop',
+            profile_photo_url: '',
             followers_count: 0,
             following_count: 0,
             posts_count: 0,

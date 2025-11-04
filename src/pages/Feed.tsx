@@ -8,8 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DailyCard } from '@/components/DailyCard';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Camera } from 'lucide-react';
-import koiLogo from '@/assets/koi-logo.png';
+import { Camera, Heart, MessageCircle } from 'lucide-react';
 
 interface Post {
   id: string;
@@ -26,7 +25,8 @@ interface Post {
     city: string;
     profile_photo_url: string;
   };
-  isSaved?: boolean;
+  likesCount?: number;
+  userLiked?: boolean;
 }
 
 export default function Feed() {
@@ -64,26 +64,34 @@ export default function Feed() {
 
       if (error) throw error;
       
-      // Check saved status for each post
-      const postsWithSaved = await Promise.all((data || []).map(async (post) => {
-        let isSaved = false;
+      // Get like counts and check if user liked each post
+      const postsWithLikes = await Promise.all((data || []).map(async (post) => {
+        // Get total likes count
+        const { count: likesCount } = await supabase
+          .from('likes')
+          .select('*', { count: 'exact', head: true })
+          .eq('post_id', post.id);
+        
+        // Check if current user liked this post
+        let userLiked = false;
         if (profile?.id) {
-          const { data: savedPost } = await supabase
-            .from('saved_posts')
+          const { data: likeData } = await supabase
+            .from('likes')
             .select('id')
             .eq('user_id', profile.id)
             .eq('post_id', post.id)
             .maybeSingle();
-          isSaved = !!savedPost;
+          userLiked = !!likeData;
         }
 
         return {
           ...post,
-          isSaved,
+          likesCount: likesCount || 0,
+          userLiked,
         };
       }));
 
-      setPosts(postsWithSaved);
+      setPosts(postsWithLikes);
     } catch (error) {
       console.error('Error loading posts:', error);
     } finally {
@@ -91,54 +99,38 @@ export default function Feed() {
     }
   };
 
-  const handleSaveToggle = async (postId: string, currentlySaved: boolean) => {
+  const handleLikeToggle = async (postId: string, currentlyLiked: boolean) => {
     if (!profile?.id) return;
 
     try {
-      if (currentlySaved) {
-        // Unsave
+      if (currentlyLiked) {
+        // Unlike
         await supabase
-          .from('saved_posts')
+          .from('likes')
           .delete()
           .eq('post_id', postId)
           .eq('user_id', profile.id);
       } else {
-        // Save
+        // Like
         const { error: insertError } = await supabase
-          .from('saved_posts')
+          .from('likes')
           .insert({ post_id: postId, user_id: profile.id });
         
-        if (insertError) {
-          if (insertError.code === '23505') {
-            toast({
-              title: "Already in your pond",
-              description: "You've already added this post to your pond",
-              variant: "destructive",
-            });
-            return;
-          }
-          throw insertError;
-        }
+        if (insertError) throw insertError;
         
-        // Find the post's author
+        // Create notification for the post author
         const post = posts.find(p => p.id === postId);
         if (post && post.user_id !== profile.id) {
-          // Create notification for the agent
           await supabase
             .from('notifications')
             .insert({
               user_id: post.user_id,
-              type: 'post_saved',
-              message: `${profile.first_name} ${profile.last_name} added your post to their pond`,
+              type: 'like',
+              message: `${profile.first_name} ${profile.last_name} liked your post`,
               related_user_id: profile.id,
               related_post_id: postId,
             });
         }
-        
-        toast({
-          title: "Added to your pond! 🐟",
-          className: "bg-accent text-white border-none shadow-md",
-        });
       }
 
       // Update local state
@@ -146,13 +138,14 @@ export default function Feed() {
         if (post.id === postId) {
           return {
             ...post,
-            isSaved: !currentlySaved,
+            userLiked: !currentlyLiked,
+            likesCount: currentlyLiked ? post.likesCount - 1 : post.likesCount + 1,
           };
         }
         return post;
       }));
     } catch (error) {
-      console.error('Error toggling save:', error);
+      console.error('Error toggling like:', error);
     }
   };
 
@@ -269,19 +262,33 @@ export default function Feed() {
                       {new Date(post.created_at).toLocaleDateString()}
                     </p>
                     
-                    <Button
-                      size="sm"
-                      variant={post.isSaved ? "default" : "accent"}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSaveToggle(post.id, post.isSaved || false);
-                      }}
-                      className="gap-2 group relative overflow-hidden"
-                    >
-                      <span className={`absolute inset-0 rounded-full transition-all duration-300 ease-out ${post.isSaved ? '' : 'scale-0 group-active:scale-150 bg-accent/20'}`}></span>
-                      <img src={koiLogo} alt="Koi" className="h-4 w-4 relative z-10" />
-                      <span className="relative z-10">{post.isSaved ? 'In Pond' : 'Add to Pond'}</span>
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant={post.userLiked ? "default" : "outline"}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleLikeToggle(post.id, post.userLiked || false);
+                        }}
+                        className="gap-1.5"
+                      >
+                        <Heart className={`h-4 w-4 ${post.userLiked ? 'fill-current' : ''}`} />
+                        <span>{post.likesCount || 0}</span>
+                      </Button>
+                      
+                      <Button
+                        size="sm"
+                        variant="accent"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/chat/${post.users.id}`);
+                        }}
+                        className="gap-1.5"
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                        <span>Message Agent</span>
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
