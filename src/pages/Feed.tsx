@@ -143,13 +143,19 @@ export default function Feed() {
         }
       }
 
+      // Reload like count from database to be accurate
+      const { count: newLikeCount } = await supabase
+        .from('likes')
+        .select('*', { count: 'exact', head: true })
+        .eq('post_id', postId);
+
       // Update local state
       setPosts(posts.map(post => {
         if (post.id === postId) {
           return {
             ...post,
             userLiked: !currentlyLiked,
-            likesCount: currentlyLiked ? (post.likesCount || 0) - 1 : (post.likesCount || 0) + 1,
+            likesCount: newLikeCount || 0,
           };
         }
         return post;

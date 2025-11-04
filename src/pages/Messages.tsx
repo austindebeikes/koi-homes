@@ -14,6 +14,7 @@ interface Conversation {
   profile_photo_url: string;
   last_message: string;
   last_message_time: string;
+  isUnread: boolean;
 }
 
 export default function Messages() {
@@ -43,15 +44,22 @@ export default function Messages() {
 
       // Group messages by conversation partner
       const conversationMap = new Map<string, any>();
+      const lastSentMap = new Map<string, Date>();
       
       for (const msg of messages || []) {
         const otherUserId = msg.sender_id === profile.id ? msg.receiver_id : msg.sender_id;
+        
+        // Track last message from user to this partner
+        if (msg.sender_id === profile.id && !lastSentMap.has(otherUserId)) {
+          lastSentMap.set(otherUserId, new Date(msg.created_at));
+        }
         
         if (!conversationMap.has(otherUserId)) {
           conversationMap.set(otherUserId, {
             other_user_id: otherUserId,
             last_message: msg.body,
             last_message_time: msg.created_at,
+            last_message_from_other: msg.sender_id !== profile.id,
           });
         }
       }
@@ -71,15 +79,25 @@ export default function Messages() {
       if (usersError) throw usersError;
 
       // Combine conversation data with user details
-      const conversationsData = users?.map(user => ({
-        id: user.id,
-        other_user_id: user.id,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        profile_photo_url: user.profile_photo_url,
-        last_message: conversationMap.get(user.id).last_message,
-        last_message_time: conversationMap.get(user.id).last_message_time,
-      })) || [];
+      const conversationsData = users?.map(user => {
+        const convData = conversationMap.get(user.id);
+        const lastSent = lastSentMap.get(user.id);
+        const lastMsgTime = new Date(convData.last_message_time);
+        
+        // Unread if: message from other person AND (no sent message OR their message is newer)
+        const isUnread = convData.last_message_from_other && (!lastSent || lastMsgTime > lastSent);
+        
+        return {
+          id: user.id,
+          other_user_id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          profile_photo_url: user.profile_photo_url,
+          last_message: convData.last_message,
+          last_message_time: convData.last_message_time,
+          isUnread,
+        };
+      }) || [];
 
       setConversations(conversationsData);
     } catch (error) {
@@ -123,12 +141,14 @@ export default function Messages() {
               </Avatar>
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-baseline">
-                  <p className="font-semibold">{conversation.first_name} {conversation.last_name}</p>
+                  <p className={conversation.isUnread ? "font-bold" : "font-semibold"}>
+                    {conversation.first_name} {conversation.last_name}
+                  </p>
                   <span className="text-xs text-muted-foreground">
                     {new Date(conversation.last_message_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
-                <p className="text-sm truncate text-muted-foreground">
+                <p className={`text-sm truncate ${conversation.isUnread ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
                   {conversation.last_message}
                 </p>
               </div>

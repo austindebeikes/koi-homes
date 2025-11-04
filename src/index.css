@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --background: 32 50% 88%; /* #F7E4CD */
+    --background: 32 40% 79%; /* #E6D2B3 */
     --foreground: 0 0% 11%;
     
     --card: 32 45% 93%;
@@ -116,4 +116,18 @@
   .text-balance {
     text-wrap: balance;
   }
+}
+
+/* Input focus styling */
+input:focus,
+textarea:focus {
+  background-color: hsl(var(--background)) !important;
+  border-color: hsl(var(--primary)) !important;
+  outline: none;
+}
+
+input,
+textarea {
+  background-color: hsl(0 0% 100%);
+  border: 1px solid hsl(32 30% 82%);
 }

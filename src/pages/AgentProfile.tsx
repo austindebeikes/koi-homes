@@ -233,17 +233,19 @@ export default function AgentProfile() {
                 {isFollowing ? 'Following' : 'Follow'}
               </Button>
             )}
-            <Button 
-              className="flex-1" 
-              size="lg"
-              onClick={() => navigate(`/chat/${agent.id}`)}
-            >
-              <MessageCircle className="mr-2 h-5 w-5" />
-              Message Agent
-            </Button>
+            {agent.role === 'Agent' && (
+              <Button 
+                className="flex-1" 
+                size="lg"
+                onClick={() => navigate(`/chat/${agent.id}`)}
+              >
+                <MessageCircle className="mr-2 h-5 w-5" />
+                Message Agent
+              </Button>
+            )}
           </div>
 
-          {profile?.id !== id && (
+          {profile?.id !== id && agent.role === 'Agent' && (
             <>
               <div className="flex gap-2">
                 <Button

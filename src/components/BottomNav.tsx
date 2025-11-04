@@ -14,18 +14,51 @@ export const BottomNav = () => {
     if (!profile?.id) return;
 
     const loadUnreadCount = async () => {
-      // Get all conversations where the user is receiver
-      const { data: messages } = await supabase
+      // Get the most recent message from each sender to the current user
+      const { data: allMessages } = await supabase
         .from('messages')
-        .select('sender_id')
-        .eq('receiver_id', profile.id)
+        .select('sender_id, receiver_id, created_at')
+        .or(`sender_id.eq.${profile.id},receiver_id.eq.${profile.id}`)
         .order('created_at', { ascending: false });
 
-      if (messages) {
-        // Count unique sender_ids (each unique sender = 1 unread conversation)
-        const uniqueSenders = new Set(messages.map(m => m.sender_id));
-        setUnreadCount(uniqueSenders.size);
+      if (!allMessages) {
+        setUnreadCount(0);
+        return;
       }
+
+      // Group messages by conversation partner
+      const conversationPartners = new Set<string>();
+      const lastReadTimes = new Map<string, Date>();
+
+      // For each conversation, find the last message the user SENT
+      for (const msg of allMessages) {
+        const partnerId = msg.sender_id === profile.id ? msg.receiver_id : msg.sender_id;
+        
+        if (msg.sender_id === profile.id && !lastReadTimes.has(partnerId)) {
+          // This is a message the user sent - marks when they last interacted
+          lastReadTimes.set(partnerId, new Date(msg.created_at));
+        }
+      }
+
+      // Count conversations where there are newer messages from the partner
+      let unreadConversations = 0;
+      for (const msg of allMessages) {
+        if (msg.receiver_id === profile.id) {
+          const partnerId = msg.sender_id;
+          const lastSentToPartner = lastReadTimes.get(partnerId);
+          const msgDate = new Date(msg.created_at);
+          
+          // If we haven't sent them anything, or they sent after our last message
+          if (!lastSentToPartner || msgDate > lastSentToPartner) {
+            if (!conversationPartners.has(partnerId)) {
+              conversationPartners.add(partnerId);
+              unreadConversations++;
+            }
+          }
+        }
+      }
+
+      setUnreadCount(unreadConversations);
     };
 
     loadUnreadCount();

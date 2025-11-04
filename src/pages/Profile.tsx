@@ -299,7 +299,8 @@ export default function Profile() {
         {/* Buyers: Simple saved posts section without tabs */}
         {profile.role === 'Buyer' && (
           <div className="p-4">
-            <h3 className="text-sm font-semibold mb-3 text-muted-foreground">
+            <h3 className="text-sm font-semibold mb-3 text-muted-foreground flex items-center gap-2">
+              <Camera className="h-4 w-4" />
               Saved snapshots
             </h3>
             <div className="grid grid-cols-2 gap-1">

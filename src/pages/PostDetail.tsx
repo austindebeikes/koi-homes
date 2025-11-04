@@ -131,7 +131,7 @@ export default function PostDetail() {
 
         if (error) throw error;
         setIsLiked(false);
-        setLikeCount(prev => prev - 1);
+        setLikeCount(prev => Math.max(0, prev - 1));
       } else {
         // Like
         const { error } = await supabase
@@ -155,6 +155,14 @@ export default function PostDetail() {
             });
         }
       }
+
+      // Re-fetch like count to ensure accuracy
+      const { count } = await supabase
+        .from('likes')
+        .select('*', { count: 'exact', head: true })
+        .eq('post_id', id);
+      
+      setLikeCount(count || 0);
     } catch (error: any) {
       console.error('Error toggling like:', error);
     }
