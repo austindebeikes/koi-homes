@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import koiBrand from '@/assets/koi-brand.png';
+import koiBrand from '@/assets/koi-signup.png';
 
 export default function Auth() {
   const navigate = useNavigate();

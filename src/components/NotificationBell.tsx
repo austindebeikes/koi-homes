@@ -3,6 +3,7 @@ import { Bell } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 import {
   Popover,
   PopoverContent,
@@ -29,6 +30,7 @@ interface Notification {
 export const NotificationBell = () => {
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
@@ -111,8 +113,12 @@ export const NotificationBell = () => {
     await markAsRead(notification.id);
     setOpen(false);
     
-    // Route to meetings page for coffee/video chat notifications
+    // Show confirmation for coffee/video chat notifications
     if (notification.type === 'coffee_request' || notification.type === 'video_request') {
+      toast({
+        title: "Meeting scheduled!",
+        description: `Your ${notification.type === 'coffee_request' ? 'coffee chat' : 'video call'} has been scheduled.`,
+      });
       navigate('/meetings');
     } else if (notification.related_user_id) {
       // Route to the related user's profile
