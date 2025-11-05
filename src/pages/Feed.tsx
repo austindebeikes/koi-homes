@@ -7,8 +7,17 @@ import { BottomNav } from '@/components/BottomNav';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DailyCard } from '@/components/DailyCard';
 import { Button } from '@/components/ui/button';
-import { Camera, Heart, MessageCircle, Bookmark } from 'lucide-react';
+import { Camera, Heart, MessageCircle, Bookmark, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+
+interface Comment {
+  id: string;
+  body: string;
+  user?: {
+    first_name: string;
+  };
+}
 
 interface Post {
   id: string;
@@ -28,6 +37,7 @@ interface Post {
   likesCount?: number;
   userLiked?: boolean;
   userSaved?: boolean;
+  comments?: Comment[];
 }
 
 export default function Feed() {
@@ -36,6 +46,7 @@ export default function Feed() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'snapshots' | 'dailys'>('snapshots');
+  const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!user) {
@@ -58,6 +69,13 @@ export default function Feed() {
             role,
             city,
             profile_photo_url
+          ),
+          comments (
+            id,
+            body,
+            user:user_id (
+              first_name
+            )
           )
         `)
         .order('created_at', { ascending: false });
@@ -317,7 +335,9 @@ export default function Feed() {
                 >
                   <Avatar className="h-10 w-10 border-2 border-primary/10">
                     <AvatarImage src={post.users.profile_photo_url} alt={`${post.users.first_name} ${post.users.last_name}`} />
-                    <AvatarFallback>{post.users.first_name[0]}{post.users.last_name[0]}</AvatarFallback>
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {post.users.first_name[0]}{post.users.last_name[0]}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="font-semibold text-sm">{post.users.first_name} {post.users.last_name}</p>
@@ -385,6 +405,48 @@ export default function Feed() {
                       </Button>
                     </div>
                   </div>
+
+                  <Collapsible
+                    open={expandedComments.has(post.id)}
+                    onOpenChange={(open) => {
+                      const newExpanded = new Set(expandedComments);
+                      if (open) {
+                        newExpanded.add(post.id);
+                      } else {
+                        newExpanded.delete(post.id);
+                      }
+                      setExpandedComments(newExpanded);
+                    }}
+                  >
+                    <CollapsibleTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full mt-2 text-muted-foreground gap-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {expandedComments.has(post.id) ? (
+                          <>
+                            Hide comments
+                            <ChevronUp className="h-4 w-4" />
+                          </>
+                        ) : (
+                          <>
+                            View comments ({post.comments?.length || 0})
+                            <ChevronDown className="h-4 w-4" />
+                          </>
+                        )}
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="mt-2 space-y-2" onClick={(e) => e.stopPropagation()}>
+                      {post.comments?.map((comment) => (
+                        <div key={comment.id} className="text-sm pl-2 border-l-2 border-primary/20">
+                          <span className="font-semibold">{comment.user?.first_name}</span>{' '}
+                          {comment.body}
+                        </div>
+                      ))}
+                    </CollapsibleContent>
+                  </Collapsible>
                 </div>
               </div>
             ))

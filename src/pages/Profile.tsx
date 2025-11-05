@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Camera, Bookmark } from 'lucide-react';
 import { ServiceManager } from '@/components/ServiceManager';
 import { DailyCard } from '@/components/DailyCard';
+import { FollowersList } from '@/components/FollowersList';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +35,8 @@ export default function Profile() {
   const [services, setServices] = useState<string[]>([]);
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [followersOpen, setFollowersOpen] = useState(false);
+  const [followingOpen, setFollowingOpen] = useState(false);
 
   useEffect(() => {
     if (profile?.id) {
@@ -279,11 +282,11 @@ export default function Profile() {
               <p className="font-bold text-lg leading-tight">{posts.length}</p>
               <p className="text-xs text-muted-foreground">Snapshots</p>
             </div>
-            <div>
+            <div className="cursor-pointer" onClick={() => setFollowersOpen(true)}>
               <p className="font-bold text-lg leading-tight">{followerCount}</p>
               <p className="text-xs text-muted-foreground">Followers</p>
             </div>
-            <div>
+            <div className="cursor-pointer" onClick={() => setFollowingOpen(true)}>
               <p className="font-bold text-lg leading-tight">{followingCount}</p>
               <p className="text-xs text-muted-foreground">Following</p>
             </div>
@@ -299,9 +302,8 @@ export default function Profile() {
         {/* Buyers: Simple saved posts section without tabs */}
         {profile.role === 'Buyer' && (
           <div className="p-4">
-            <h3 className="text-center font-semibold mb-3 flex items-center justify-center gap-2">
-              <Camera className="h-4 w-4" />
-              Saved snapshots
+            <h3 className="text-center font-semibold mb-3">
+              📷 Saved snapshots
             </h3>
             <div className="grid grid-cols-2 gap-1">
               {savedPosts.length > 0 ? (
@@ -394,6 +396,20 @@ export default function Profile() {
       </div>
 
       <BottomNav />
+      
+      <FollowersList
+        userId={profile.id}
+        type="followers"
+        open={followersOpen}
+        onOpenChange={setFollowersOpen}
+      />
+      
+      <FollowersList
+        userId={profile.id}
+        type="following"
+        open={followingOpen}
+        onOpenChange={setFollowingOpen}
+      />
     </div>
   );
 }

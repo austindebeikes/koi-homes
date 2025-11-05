@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { MessageCircle, Coffee, Film } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
+import { FollowersList } from '@/components/FollowersList';
+import { Card } from '@/components/ui/card';
 
 interface AgentData {
   id: string;
@@ -36,6 +38,7 @@ export default function AgentProfile() {
   const { profile } = useAuth();
   const [agent, setAgent] = useState<AgentData | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [savedPosts, setSavedPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
@@ -45,12 +48,15 @@ export default function AgentProfile() {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [requestSent, setRequestSent] = useState<string | null>(null);
+  const [followersOpen, setFollowersOpen] = useState(false);
+  const [followingOpen, setFollowingOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
       loadAgentData();
       loadFollowCounts();
       checkIfFollowing();
+      loadSavedPosts();
     }
   }, [id, profile?.id]);
 
@@ -79,6 +85,30 @@ export default function AgentProfile() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadSavedPosts = async () => {
+    if (!id) return;
+    
+    const { data, error } = await supabase
+      .from('saved_posts')
+      .select(`
+        post_id,
+        posts (
+          id,
+          photo_url,
+          caption
+        )
+      `)
+      .eq('user_id', id)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error loading saved posts:', error);
+      return;
+    }
+    
+    setSavedPosts(data?.map(item => item.posts).filter(Boolean) || []);
   };
 
   const loadFollowCounts = async () => {
@@ -167,7 +197,7 @@ export default function AgentProfile() {
         .from('notifications')
         .insert({
           user_id: id,
-          type: 'meeting_request',
+          type: scheduleType === 'coffee' ? 'coffee_request' : 'video_request',
           message: `${profile.first_name} ${profile.last_name} requested a ${scheduleType === 'coffee' ? 'Coffee Chat' : 'Video Call'}`,
           related_user_id: profile.id,
         });
@@ -197,28 +227,108 @@ export default function AgentProfile() {
   if (!agent) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <AppHeader title="Agent Profile" showLogo={false} />
+        <AppHeader title="" showLogo={false} />
         <div className="flex items-center justify-center p-6">
-          <p className="text-muted-foreground">Agent not found</p>
+          <p className="text-muted-foreground">User not found</p>
         </div>
         <BottomNav />
       </div>
     );
   }
 
+  const isOwnProfile = profile?.id === agent.id;
   const isBuyer = agent.role === 'Buyer';
-  const isAgent = agent.role === 'Agent';
+
+  // Render buyer profile view
+  if (isBuyer) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <AppHeader title="" showLogo={false} />
+        
+        <div className="max-w-md mx-auto">
+          <div className="flex flex-col items-center gap-4 py-6">
+            <Avatar className="h-24 w-24">
+              <AvatarImage src={agent.profile_photo_url} />
+              <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
+                {agent.first_name[0]}{agent.last_name[0]}
+              </AvatarFallback>
+            </Avatar>
+            <div className="text-center space-y-1">
+              <h2 className="text-xl font-semibold">{agent.first_name} {agent.last_name}</h2>
+              <p className="text-muted-foreground">Home Buyer</p>
+              <p className="text-sm text-muted-foreground">{agent.city}</p>
+              {agent.bio && <p className="text-sm mt-2 px-6">{agent.bio}</p>}
+            </div>
+
+            {!isOwnProfile && (
+              <Button
+                variant="default"
+                className="gap-2"
+                onClick={() => navigate(`/chat/${agent.id}`)}
+              >
+                <MessageCircle className="h-4 w-4" />
+                Message
+              </Button>
+            )}
+          </div>
+
+          <div className="px-4 pb-6">
+            <h3 className="text-center font-semibold mb-4">
+              📷 Saved snapshots
+            </h3>
+            {savedPosts.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">No saved snapshots yet</p>
+            ) : (
+              <div className="grid grid-cols-3 gap-1">
+                {savedPosts.map((post) => (
+                  <Card
+                    key={post.id}
+                    className="aspect-square overflow-hidden cursor-pointer"
+                    onClick={() => navigate(`/post/${post.id}`)}
+                  >
+                    <img
+                      src={post.photo_url}
+                      alt="Saved snapshot"
+                      className="w-full h-full object-cover"
+                    />
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <BottomNav />
+        
+        <FollowersList
+          userId={agent.id}
+          type="followers"
+          open={followersOpen}
+          onOpenChange={setFollowersOpen}
+        />
+        
+        <FollowersList
+          userId={agent.id}
+          type="following"
+          open={followingOpen}
+          onOpenChange={setFollowingOpen}
+        />
+      </div>
+    );
+  }
+
+  // Render agent profile view
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <AppHeader title={isBuyer ? "Buyer Profile" : "Agent Profile"} showLogo={false} />
+      <AppHeader title="" showLogo={false} />
 
       <div className="max-w-md mx-auto">
         <div className="p-6 space-y-4">
           <div className="flex items-start gap-4">
             <Avatar className="h-24 w-24">
               <AvatarImage src={agent.profile_photo_url} alt="Profile" />
-              <AvatarFallback>
+              <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
                 {agent.first_name[0]}{agent.last_name[0]}
               </AvatarFallback>
             </Avatar>
@@ -237,7 +347,7 @@ export default function AgentProfile() {
           </div>
 
           <div className="flex gap-2">
-            {profile?.id !== id && !isBuyer && (
+            {!isOwnProfile && (
               <Button
                 variant={isFollowing ? "outline" : "default"}
                 className="flex-1"
@@ -247,7 +357,7 @@ export default function AgentProfile() {
                 {isFollowing ? 'Following' : 'Follow'}
               </Button>
             )}
-            {profile?.id !== id && (
+            {!isOwnProfile && (
               <Button 
                 className="flex-1" 
                 size="lg"
@@ -259,7 +369,7 @@ export default function AgentProfile() {
             )}
           </div>
 
-          {profile?.id !== id && isAgent && (
+          {!isOwnProfile && (
             <>
               <div className="flex gap-2">
                 <Button
@@ -298,39 +408,23 @@ export default function AgentProfile() {
               <p className="font-bold text-lg">{posts.length}</p>
               <p className="text-sm text-muted-foreground">Snapshots</p>
             </div>
-            <div>
+            <div className="cursor-pointer" onClick={() => setFollowersOpen(true)}>
               <p className="font-bold text-lg">{followerCount}</p>
               <p className="text-sm text-muted-foreground">Followers</p>
             </div>
-            <div>
+            <div className="cursor-pointer" onClick={() => setFollowingOpen(true)}>
               <p className="font-bold text-lg">{followingCount}</p>
               <p className="text-sm text-muted-foreground">Following</p>
             </div>
           </div>
         </div>
 
-        {/* For buyers: show only saved snapshots */}
-        {isBuyer && profile?.id !== id && (
-          <div className="p-4">
-            <h3 className="text-center font-semibold mb-3">Saved snapshots</h3>
-            <div className="grid grid-cols-2 gap-1">
-              <p className="col-span-2 text-center text-muted-foreground py-8">
-                No saved snapshots
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* For agents or own profile: show tabs */}
-        {(isAgent || profile?.id === id) && (
-          <Tabs defaultValue="snapshots" className="w-full">
-            <TabsList className="w-full">
-              <TabsTrigger value="snapshots" className="flex-1">Snapshots</TabsTrigger>
-              {isAgent && (
-                <TabsTrigger value="services" className="flex-1">Services</TabsTrigger>
-              )}
-            </TabsList>
-
+        <Tabs defaultValue="snapshots" className="w-full">
+          <TabsList className="w-full">
+            <TabsTrigger value="snapshots" className="flex-1">Snapshots</TabsTrigger>
+            <TabsTrigger value="saved" className="flex-1">Saved</TabsTrigger>
+            <TabsTrigger value="services" className="flex-1">Services</TabsTrigger>
+          </TabsList>
           <TabsContent value="snapshots" className="p-1">
             <div className="grid grid-cols-2 gap-1">
               {posts.length > 0 ? (
@@ -351,8 +445,25 @@ export default function AgentProfile() {
             </div>
           </TabsContent>
 
-            {isAgent && (
-              <TabsContent value="services" className="p-4">
+          <TabsContent value="saved" className="p-1">
+            {savedPosts.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">No saved snapshots yet</p>
+            ) : (
+              <div className="grid grid-cols-2 gap-1">
+                {savedPosts.map((post) => (
+                  <img
+                    key={post.id}
+                    src={post.photo_url}
+                    alt={post.caption || 'Saved'}
+                    className="w-full aspect-square object-cover rounded cursor-pointer hover:opacity-90 transition-opacity"
+                    onClick={() => navigate(`/post/${post.id}`)}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="services" className="p-4">
                 <div className="flex flex-wrap gap-2">
                   {((agent as any).services || []).length > 0 ? (
                     ((agent as any).services || []).map((service: string, index: number) => {
@@ -389,10 +500,8 @@ export default function AgentProfile() {
                     <p className="text-muted-foreground text-sm">No services listed yet</p>
                   )}
                 </div>
-              </TabsContent>
-            )}
-          </Tabs>
-        )}
+          </TabsContent>
+        </Tabs>
       </div>
 
       <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
@@ -431,6 +540,20 @@ export default function AgentProfile() {
       </Dialog>
 
       <BottomNav />
+      
+      <FollowersList
+        userId={agent.id}
+        type="followers"
+        open={followersOpen}
+        onOpenChange={setFollowersOpen}
+      />
+      
+      <FollowersList
+        userId={agent.id}
+        type="following"
+        open={followingOpen}
+        onOpenChange={setFollowingOpen}
+      />
     </div>
   );
 }
