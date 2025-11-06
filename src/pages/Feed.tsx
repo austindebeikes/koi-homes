@@ -373,15 +373,15 @@ export default function Feed() {
                           e.stopPropagation();
                           handleLikeToggle(post.id, post.userLiked || false);
                         }}
-                        className="gap-1.5"
+                        className={`gap-1.5 ${post.userLiked ? 'bg-[hsl(340_82%_62%)] hover:bg-[hsl(340_82%_62%)]/90 border-[hsl(340_82%_62%)]' : ''}`}
                       >
-                        <Heart className={`h-4 w-4 ${post.userLiked ? 'fill-current' : ''}`} />
+                        <Heart className={`h-4 w-4 ${post.userLiked ? 'fill-white' : ''}`} />
                         <span>{post.likesCount || 0}</span>
                       </Button>
                       
                       <Button
                         size="sm"
-                        variant="accent"
+                        variant="default"
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/chat/${post.users.id}`);

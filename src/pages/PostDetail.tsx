@@ -320,14 +320,14 @@ export default function PostDetail() {
             variant={isLiked ? "default" : "outline"}
             size="sm"
             onClick={handleLikeToggle}
-            className="gap-1.5"
+            className={`gap-1.5 ${isLiked ? 'bg-[hsl(340_82%_62%)] hover:bg-[hsl(340_82%_62%)]/90 border-[hsl(340_82%_62%)]' : ''}`}
           >
-            <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
+            <Heart className={`h-4 w-4 ${isLiked ? "fill-white" : ""}`} />
             <span>{likeCount}</span>
           </Button>
           
           <Button
-            variant="accent"
+            variant="default"
             size="sm"
             onClick={() => navigate(`/chat/${post.users.id}`)}
             className="gap-1.5"

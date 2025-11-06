@@ -115,9 +115,10 @@ export const NotificationBell = () => {
     
     // Show confirmation for coffee/video chat notifications
     if (notification.type === 'coffee_request' || notification.type === 'video_request') {
+      const meetingType = notification.type === 'coffee_request' ? 'Coffee meeting' : 'Video call';
       toast({
-        title: "Meeting scheduled!",
-        description: `Your ${notification.type === 'coffee_request' ? 'coffee chat' : 'video call'} has been scheduled.`,
+        title: `${meetingType} request`,
+        description: "A buyer has requested to meet with you.",
       });
       navigate('/meetings');
     } else if (notification.related_user_id) {

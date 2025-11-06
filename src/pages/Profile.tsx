@@ -263,7 +263,7 @@ export default function Profile() {
 
           {profile?.role === 'Agent' && (
             <Button 
-              variant="accent"
+              variant="default"
               className="w-full" 
               size="lg"
               onClick={() => navigate('/post/new')}

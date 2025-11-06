@@ -15,10 +15,10 @@ export const AppHeader = ({ title, showLogo = true }: AppHeaderProps) => {
       <div className="max-w-md mx-auto px-4 h-14 flex items-center justify-between">
         <div className="w-10" />
         {showLogo && (
-          <h1 className="text-3xl font-koi-script text-primary">koi</h1>
+          <h1 className="text-2xl font-heading text-foreground">koi</h1>
         )}
         {title && !showLogo && (
-          <h1 className="text-xl font-koi-script text-primary">{title}</h1>
+          <h1 className="text-xl font-heading text-foreground">{title}</h1>
         )}
         {isAgent ? <NotificationBell /> : <div className="w-10" />}
       </div>

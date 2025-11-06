@@ -6,35 +6,35 @@
 
 @layer base {
   :root {
-    --background: 100 100% 100%; /* #F6f0df */
-    --foreground: 0 0% 11%;
+    --background: 0 0% 100%; /* white */
+    --foreground: 0 0% 11%; /* #1B1B1B */
 
-    --card: 32 45% 93%;
+    --card: 0 0% 100%;
     --card-foreground: 0 0% 11%;
 
-    --popover: 32 45% 93%;
+    --popover: 0 0% 100%;
     --popover-foreground: 0 0% 11%;
 
-    --primary: 180 50% 25%;
-    --primary-foreground: 28 35% 92%;
+    --primary: 16 92% 59%; /* #F4743B koi orange */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 28 35% 88%;
+    --secondary: 40 60% 85%; /* #EEDDB6 light cream */
     --secondary-foreground: 0 0% 11%;
 
-    --muted: 28 35% 88%;
-    --muted-foreground: 0 0% 31%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 18 80% 60%;
+    --accent: 16 92% 59%; /* same as primary */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 28 30% 85%;
-    --input: 28 30% 90%;
-    --ring: 180 50% 25%;
+    --border: 0 0% 90%;
+    --input: 0 0% 95%;
+    --ring: 16 92% 59%;
 
-    --dailys-bg: 30 30% 95%;
+    --like-active: 340 82% 62%; /* pink for liked */
 
     --radius: 0.75rem;
 
@@ -56,44 +56,44 @@
   }
 
   .dark {
-    --background: 180 50% 8%;
-    --foreground: 28 35% 92%;
+    --background: 0 0% 10%;
+    --foreground: 0 0% 95%;
 
-    --card: 180 50% 12%;
-    --card-foreground: 28 35% 92%;
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 180 50% 12%;
-    --popover-foreground: 28 35% 92%;
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 180 50% 35%;
-    --primary-foreground: 28 35% 92%;
+    --primary: 16 92% 59%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 180 30% 18%;
-    --secondary-foreground: 28 35% 92%;
+    --secondary: 0 0% 18%;
+    --secondary-foreground: 0 0% 95%;
 
-    --muted: 180 30% 18%;
-    --muted-foreground: 28 35% 75%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 65%;
 
-    --accent: 18 80% 60%;
+    --accent: 16 92% 59%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 180 30% 20%;
-    --input: 180 30% 20%;
-    --ring: 180 50% 35%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 16 92% 59%;
 
-    --dailys-bg: 30 30% 15%;
+    --like-active: 340 82% 62%;
 
     --sidebar-background: 0 0% 7%;
     --sidebar-foreground: 0 0% 96%;
-    --sidebar-primary: 15 100% 60%;
+    --sidebar-primary: 16 92% 59%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 15%;
-    --sidebar-accent-foreground: 15 100% 60%;
+    --sidebar-accent-foreground: 16 92% 59%;
     --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 15 100% 60%;
+    --sidebar-ring: 16 92% 59%;
   }
 }
 
@@ -105,7 +105,7 @@
   body {
     @apply bg-background text-foreground;
     font-family:
-      "Poppins",
+      "Inter",
       -apple-system,
       BlinkMacSystemFont,
       "Segoe UI",
@@ -118,7 +118,9 @@
   h4,
   h5,
   h6 {
-    @apply text-foreground font-semibold;
+    @apply text-foreground;
+    font-family: "Pacifico", cursive;
+    font-weight: 400;
   }
 }
 
@@ -139,11 +141,11 @@ textarea:focus {
 input,
 textarea {
   background-color: hsl(0 0% 100%);
-  border: 1px solid hsl(40 25% 85%);
+  border: 1px solid hsl(0 0% 90%);
   border-radius: 0.5rem;
 }
 
 input:focus,
 textarea:focus {
-  border-color: hsl(180 50% 25%) !important;
+  border-color: hsl(16 92% 59%) !important;
 }

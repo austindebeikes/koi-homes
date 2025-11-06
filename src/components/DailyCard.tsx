@@ -53,8 +53,8 @@ export function DailyCard({ daily }: DailyCardProps) {
 
       {/* Content */}
       <div className="mb-4">
-        <p className="text-lg leading-relaxed font-serif italic text-foreground">
-          &ldquo;{daily.caption}&rdquo;
+        <p className="text-base leading-relaxed text-foreground">
+          {daily.caption}
         </p>
       </div>
 
@@ -68,7 +68,7 @@ export function DailyCard({ daily }: DailyCardProps) {
 
         <Button
           size="sm"
-          variant="accent"
+          variant="default"
           className="w-full gap-1.5"
           onClick={() => navigate(`/chat/${daily.users.id}`)}
         >

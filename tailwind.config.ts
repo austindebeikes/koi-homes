@@ -14,10 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        'koi': ['Comfortaa', 'sans-serif'],
-        'koi-script': ['Pacifico', 'cursive'],
-        'sans': ['Poppins', 'system-ui', 'sans-serif'],
-        'serif': ['Playfair Display', 'serif'],
+        sans: ["Inter", "sans-serif"],
+        heading: ["Pacifico", "cursive"],
       },
       colors: {
         border: "hsl(var(--border))",
