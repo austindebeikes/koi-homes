@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 0%; /* #F6f0df */
+    --background: 100 100% 100%; /* #F6f0df */
     --foreground: 0 0% 11%;
 
     --card: 32 45% 93%;
