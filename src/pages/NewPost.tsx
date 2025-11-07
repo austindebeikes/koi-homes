@@ -158,6 +158,17 @@ export default function NewPost() {
             />
           )}
 
+          {postType === 'daily' && (
+            <ImageUpload
+              onUploadComplete={(url) => setImageUrl(url)}
+              currentImageUrl={imageUrl}
+              label="Daily Video (Optional)"
+              bucketName="post-photos"
+              acceptVideo={true}
+              maxDuration={5}
+            />
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="caption">{postType === 'photo' ? 'Caption' : 'Daily Update'}</Label>
             <Textarea

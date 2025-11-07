@@ -247,7 +247,7 @@ export default function AgentProfile() {
               </AvatarFallback>
             </Avatar>
             <div className="text-center space-y-1">
-              <h2 className="text-xl font-sans font-semibold">{agent.first_name} {agent.last_name}</h2>
+              <h2 className="text-xl font-heading font-semibold">{agent.first_name} {agent.last_name}</h2>
               <p className="text-muted-foreground">Home Buyer</p>
               <p className="text-sm text-muted-foreground">{agent.city}</p>
               {agent.bio && <p className="text-sm mt-2 px-6">{agent.bio}</p>}
@@ -255,8 +255,8 @@ export default function AgentProfile() {
           </div>
 
           <div className="px-4 pb-6">
-            <h3 className="text-center font-semibold mb-4">
-              📷 Saved snapshots
+            <h3 className="text-center font-heading font-semibold mb-4">
+              Saved snapshots
             </h3>
             {savedPosts.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">No saved snapshots yet</p>
@@ -316,7 +316,7 @@ export default function AgentProfile() {
             </Avatar>
 
             <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-bold">
+              <h2 className="text-xl font-heading font-semibold">
                 {agent.first_name} {agent.last_name}
               </h2>
               <p className="text-muted-foreground text-sm">
@@ -397,7 +397,7 @@ export default function AgentProfile() {
         <Tabs defaultValue="snapshots" className="w-full">
           <TabsList className="w-full">
             <TabsTrigger value="snapshots" className="flex-1">Snapshots</TabsTrigger>
-            <TabsTrigger value="saved" className="flex-1">Saved</TabsTrigger>
+            {isOwnProfile && <TabsTrigger value="saved" className="flex-1">Saved</TabsTrigger>}
             <TabsTrigger value="services" className="flex-1">Services</TabsTrigger>
           </TabsList>
           <TabsContent value="snapshots" className="p-1">
@@ -420,23 +420,25 @@ export default function AgentProfile() {
             </div>
           </TabsContent>
 
-          <TabsContent value="saved" className="p-1">
-            {savedPosts.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">No saved snapshots yet</p>
-            ) : (
-              <div className="grid grid-cols-2 gap-1">
-                {savedPosts.map((post) => (
-                  <img
-                    key={post.id}
-                    src={post.photo_url}
-                    alt={post.caption || 'Saved'}
-                    className="w-full aspect-square object-cover rounded cursor-pointer hover:opacity-90 transition-opacity"
-                    onClick={() => navigate(`/post/${post.id}`)}
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
+          {isOwnProfile && (
+            <TabsContent value="saved" className="p-1">
+              {savedPosts.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No saved snapshots yet</p>
+              ) : (
+                <div className="grid grid-cols-2 gap-1">
+                  {savedPosts.map((post) => (
+                    <img
+                      key={post.id}
+                      src={post.photo_url}
+                      alt={post.caption || 'Saved'}
+                      className="w-full aspect-square object-cover rounded cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => navigate(`/post/${post.id}`)}
+                    />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          )}
 
           <TabsContent value="services" className="p-4">
                 <div className="flex flex-wrap gap-2">

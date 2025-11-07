@@ -1,7 +1,7 @@
 import { NotificationBell } from './NotificationBell';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LogOut } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface AppHeaderProps {
@@ -10,13 +10,12 @@ interface AppHeaderProps {
 }
 
 export const AppHeader = ({ title, showLogo = true }: AppHeaderProps) => {
-  const { profile, signOut } = useAuth();
+  const { profile } = useAuth();
   const navigate = useNavigate();
   const isAgent = profile?.role === 'Agent';
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/auth');
+  const handleBack = () => {
+    navigate(-1);
   };
 
   return (
@@ -25,10 +24,10 @@ export const AppHeader = ({ title, showLogo = true }: AppHeaderProps) => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={handleSignOut}
+          onClick={handleBack}
           className="h-8 w-8"
         >
-          <LogOut className="h-4 w-4" />
+          <ArrowLeft className="h-4 w-4" />
         </Button>
         {showLogo && (
           <h1 className="text-2xl font-sans lowercase text-primary font-semibold">koi</h1>
