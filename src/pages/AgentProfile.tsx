@@ -193,8 +193,7 @@ export default function AgentProfile() {
         });
 
       toast({
-        title: "Scheduled!",
-        description: `Your ${type === 'coffee' ? 'coffee chat' : 'video call'} has been scheduled.`,
+        title: "Request sent!",
       });
     } catch (error) {
       console.error('Error scheduling meeting:', error);
@@ -248,22 +247,11 @@ export default function AgentProfile() {
               </AvatarFallback>
             </Avatar>
             <div className="text-center space-y-1">
-              <h2 className="text-xl font-semibold">{agent.first_name} {agent.last_name}</h2>
+              <h2 className="text-xl font-sans font-semibold">{agent.first_name} {agent.last_name}</h2>
               <p className="text-muted-foreground">Home Buyer</p>
               <p className="text-sm text-muted-foreground">{agent.city}</p>
               {agent.bio && <p className="text-sm mt-2 px-6">{agent.bio}</p>}
             </div>
-
-            {!isOwnProfile && (
-              <Button
-                variant="default"
-                className="gap-2"
-                onClick={() => navigate(`/chat/${agent.id}`)}
-              >
-                <MessageCircle className="h-4 w-4" />
-                Message
-              </Button>
-            )}
           </div>
 
           <div className="px-4 pb-6">

@@ -253,13 +253,6 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Show Daily if exists and is recent */}
-          {dailyPost && (
-            <div className="pt-0.5">
-              <h3 className="text-xs font-semibold mb-1.5 text-muted-foreground">Today&apos;s Quote</h3>
-              <DailyCard daily={dailyPost} />
-            </div>
-          )}
 
           {profile?.role === 'Agent' && (
             <Button 
@@ -302,9 +295,12 @@ export default function Profile() {
         {/* Buyers: Simple saved posts section without tabs */}
         {profile.role === 'Buyer' && (
           <div className="p-4">
-            <h3 className="text-center font-semibold mb-3">
-              📷 Saved snapshots
-            </h3>
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <Camera className="h-5 w-5" />
+              <h3 className="text-center font-sans font-semibold">
+                Saved snapshots
+              </h3>
+            </div>
             <div className="grid grid-cols-2 gap-1">
               {savedPosts.length > 0 ? (
                 savedPosts.map((post: any) => (

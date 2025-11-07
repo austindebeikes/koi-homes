@@ -7,9 +7,8 @@ import { BottomNav } from '@/components/BottomNav';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DailyCard } from '@/components/DailyCard';
 import { Button } from '@/components/ui/button';
-import { Camera, Heart, MessageCircle, Bookmark, ChevronDown, ChevronUp } from 'lucide-react';
+import { Camera, Heart, MessageCircle, Bookmark } from 'lucide-react';
 import { toast } from 'sonner';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface Comment {
   id: string;
@@ -46,7 +45,6 @@ export default function Feed() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'snapshots' | 'dailys'>('snapshots');
-  const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!user) {
@@ -392,61 +390,21 @@ export default function Feed() {
                         <span>Message Agent</span>
                       </Button>
 
-                      <Button
-                        size="sm"
-                        variant={post.userSaved ? "default" : "outline"}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSaveToggle(post.id, post.userSaved || false);
-                        }}
-                        className="gap-1.5"
-                      >
-                        <Bookmark className={`h-4 w-4 ${post.userSaved ? 'fill-current' : ''}`} />
-                      </Button>
+                      {profile?.role === 'Buyer' && (
+                        <Button
+                          size="sm"
+                          variant={post.userSaved ? "default" : "outline"}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSaveToggle(post.id, post.userSaved || false);
+                          }}
+                          className="gap-1.5"
+                        >
+                          <Bookmark className={`h-4 w-4 ${post.userSaved ? 'fill-current' : ''}`} />
+                        </Button>
+                      )}
                     </div>
                   </div>
-
-                  <Collapsible
-                    open={expandedComments.has(post.id)}
-                    onOpenChange={(open) => {
-                      const newExpanded = new Set(expandedComments);
-                      if (open) {
-                        newExpanded.add(post.id);
-                      } else {
-                        newExpanded.delete(post.id);
-                      }
-                      setExpandedComments(newExpanded);
-                    }}
-                  >
-                    <CollapsibleTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full mt-2 text-muted-foreground gap-1"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {expandedComments.has(post.id) ? (
-                          <>
-                            Hide comments
-                            <ChevronUp className="h-4 w-4" />
-                          </>
-                        ) : (
-                          <>
-                            View comments ({post.comments?.length || 0})
-                            <ChevronDown className="h-4 w-4" />
-                          </>
-                        )}
-                      </Button>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="mt-2 space-y-2" onClick={(e) => e.stopPropagation()}>
-                      {post.comments?.map((comment) => (
-                        <div key={comment.id} className="text-sm pl-2 border-l-2 border-primary/20">
-                          <span className="font-semibold">{comment.user?.first_name}</span>{' '}
-                          {comment.body}
-                        </div>
-                      ))}
-                    </CollapsibleContent>
-                  </Collapsible>
                 </div>
               </div>
             ))

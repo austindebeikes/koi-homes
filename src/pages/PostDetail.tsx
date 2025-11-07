@@ -336,15 +336,17 @@ export default function PostDetail() {
             <span>Message Agent</span>
           </Button>
 
-          <Button
-            variant={isSaved ? "default" : "outline"}
-            size="sm"
-            onClick={handleSaveToggle}
-            className="gap-1.5 ml-auto"
-          >
-            <Bookmark className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
-            <span>{isSaved ? 'Saved' : 'Save'}</span>
-          </Button>
+          {profile?.role === 'Buyer' && (
+            <Button
+              variant={isSaved ? "default" : "outline"}
+              size="sm"
+              onClick={handleSaveToggle}
+              className="gap-1.5 ml-auto"
+            >
+              <Bookmark className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
+              <span>{isSaved ? 'Saved' : 'Save'}</span>
+            </Button>
+          )}
         </div>
 
         {/* Comments Section */}

@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ImageUpload';
+import { Camera } from 'lucide-react';
 
 export default function NewPost() {
   const navigate = useNavigate();
@@ -131,10 +132,11 @@ export default function NewPost() {
               <Button
                 type="button"
                 variant={postType === 'photo' ? 'default' : 'outline'}
-                className="flex-1"
+                className="flex-1 gap-2"
                 onClick={() => setPostType('photo')}
               >
-                📸 Snapshot
+                <Camera className="h-4 w-4" />
+                Snapshot
               </Button>
               <Button
                 type="button"
