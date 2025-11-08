@@ -99,15 +99,23 @@ export default function Meetings() {
                 className="bg-card border border-border rounded-lg p-4 space-y-3"
               >
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={meeting.buyer?.profile_photo_url} />
-                    <AvatarFallback>
-                      {meeting.buyer?.first_name[0]}
-                      {meeting.buyer?.last_name[0]}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div 
+                    className="cursor-pointer"
+                    onClick={() => navigate(`/agent/${meeting.buyer_id}`)}
+                  >
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={meeting.buyer?.profile_photo_url} />
+                      <AvatarFallback>
+                        {meeting.buyer?.first_name[0]}
+                        {meeting.buyer?.last_name[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
                   <div className="flex-1">
-                    <p className="font-semibold">
+                    <p 
+                      className="font-semibold cursor-pointer hover:underline"
+                      onClick={() => navigate(`/agent/${meeting.buyer_id}`)}
+                    >
                       {meeting.buyer?.first_name} {meeting.buyer?.last_name}
                     </p>
                     <p className="text-sm text-muted-foreground flex items-center gap-1.5">

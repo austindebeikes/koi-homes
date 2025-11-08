@@ -110,7 +110,7 @@ export default function Messages() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <AppHeader title="Messages" />
+      <AppHeader showLogo={true} useLogoImage={true} />
 
       <div className="max-w-md mx-auto">
         {conversations.length === 0 ? (

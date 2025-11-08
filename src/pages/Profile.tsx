@@ -231,7 +231,7 @@ export default function Profile() {
             </Avatar>
 
             <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-heading font-semibold mb-0.5 leading-tight">
+              <h2 className="text-xl font-sans font-semibold mb-0.5 leading-tight">
                 {profile.first_name} {profile.last_name}
               </h2>
               <p className="text-muted-foreground text-xs mb-0.5">
@@ -297,7 +297,7 @@ export default function Profile() {
           <div className="p-4">
             <div className="flex items-center justify-center gap-2 mb-3">
               <Bookmark className="h-5 w-5" />
-              <h3 className="text-center font-heading font-semibold">
+              <h3 className="text-center font-sans font-semibold">
                 Saved snapshots
               </h3>
             </div>

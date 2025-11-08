@@ -351,7 +351,7 @@ export default function PostDetail() {
 
         {/* Comments Section */}
         <div className="space-y-4">
-          <h3 className="font-semibold text-lg">Comments</h3>
+          <h3 className="font-sans font-semibold text-lg">Comments</h3>
 
           {/* Comment Input */}
           <div className="flex gap-2">

@@ -2,20 +2,32 @@ import { NotificationBell } from './NotificationBell';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import koiLogo from '@/assets/koi-logo-new.png';
 
 interface AppHeaderProps {
   title?: string;
   showLogo?: boolean;
+  useLogoImage?: boolean;
 }
 
-export const AppHeader = ({ title, showLogo = true }: AppHeaderProps) => {
+export const AppHeader = ({ title, showLogo = true, useLogoImage = false }: AppHeaderProps) => {
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const isAgent = profile?.role === 'Agent';
 
   const handleBack = () => {
-    navigate(-1);
+    // Define the main pages
+    const mainPages = ['/', '/feed', '/search', '/messages', '/profile', '/pond'];
+    
+    // If we're on a main page, go to feed
+    if (mainPages.includes(location.pathname)) {
+      navigate('/feed');
+    } else {
+      // Otherwise go back
+      navigate(-1);
+    }
   };
 
   return (
@@ -29,7 +41,10 @@ export const AppHeader = ({ title, showLogo = true }: AppHeaderProps) => {
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        {showLogo && (
+        {showLogo && useLogoImage && (
+          <img src={koiLogo} alt="Koi" className="h-8 w-8 object-contain" />
+        )}
+        {showLogo && !useLogoImage && (
           <h1 className="text-2xl font-sans lowercase text-primary font-semibold">koi</h1>
         )}
         {title && !showLogo && (

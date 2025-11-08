@@ -113,7 +113,7 @@ export default function Auth() {
       <div className="max-w-md mx-auto p-6 flex-1 flex flex-col justify-center">
         {/* Branded Header */}
         <div className="flex flex-col items-center gap-4 mb-6">
-          <img src={koiBrand} alt="Koi" className="w-64 h-64 object-contain" />
+          <img src="/src/assets/koi-logo-new.png" alt="Koi" className="w-64 h-64 object-contain" />
           <p className="text-primary text-lg font-medium text-center">
             {isLogin ? 'Welcome back' : 'Join the community'}
           </p>

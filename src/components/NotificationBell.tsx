@@ -161,13 +161,21 @@ export const NotificationBell = () => {
               >
                 <div className="flex gap-3">
                   {notification.related_user && (
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={notification.related_user.profile_photo_url} />
-                      <AvatarFallback>
-                        {notification.related_user.first_name[0]}
-                        {notification.related_user.last_name[0]}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div 
+                      className="cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/agent/${notification.related_user_id}`);
+                      }}
+                    >
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={notification.related_user.profile_photo_url} />
+                        <AvatarFallback>
+                          {notification.related_user.first_name[0]}
+                          {notification.related_user.last_name[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm">{notification.message}</p>
