@@ -41,10 +41,7 @@ export const AppHeader = ({ title, showLogo = true, useLogoImage = false }: AppH
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        {showLogo && useLogoImage && (
-          <img src={koiLogo} alt="Koi" className="h-8 w-8 object-contain" />
-        )}
-        {showLogo && !useLogoImage && (
+        {showLogo && (
           <h1 className="text-2xl font-sans lowercase text-primary font-semibold">koi</h1>
         )}
         {title && !showLogo && (

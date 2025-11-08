@@ -51,8 +51,10 @@ export default function Feed() {
       navigate('/auth');
       return;
     }
-    loadPosts();
-  }, [user, navigate]);
+    if (profile?.id) {
+      loadPosts();
+    }
+  }, [user, profile?.id, navigate]);
 
   const loadPosts = async () => {
     try {
