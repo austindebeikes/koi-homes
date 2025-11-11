@@ -378,7 +378,7 @@ export default function PostDetail() {
             ) : (
               comments.map((comment) => (
                 <div key={comment.id} className="flex gap-3">
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-8 w-8 border border-border">
                     <AvatarImage src={comment.users.profile_photo_url} />
                     <AvatarFallback>
                       {comment.users.first_name[0]}{comment.users.last_name[0]}

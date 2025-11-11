@@ -124,7 +124,7 @@ export default function Messages() {
               onClick={() => navigate(`/chat/${conversation.other_user_id}`)}
               className="flex items-center gap-3 p-4 hover:bg-accent cursor-pointer border-b border-border"
             >
-              <Avatar className="h-14 w-14">
+              <Avatar className="h-14 w-14 border-2 border-border">
                 <AvatarImage src={conversation.profile_photo_url} alt={`${conversation.first_name} ${conversation.last_name}`} />
                 <AvatarFallback>{conversation.first_name[0]}{conversation.last_name[0]}</AvatarFallback>
               </Avatar>

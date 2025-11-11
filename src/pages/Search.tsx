@@ -145,7 +145,7 @@ export default function Search() {
                   }
                 }}
               >
-                <Avatar className="h-12 w-12">
+                <Avatar className="h-12 w-12 border-2 border-border">
                   <AvatarImage src={agent.profile_photo_url} alt={`${agent.first_name} ${agent.last_name}`} />
                   <AvatarFallback>{agent.first_name[0]}{agent.last_name[0]}</AvatarFallback>
                 </Avatar>

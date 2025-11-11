@@ -56,7 +56,7 @@ export default function EditProfile() {
 
       <div className="max-w-md mx-auto p-6 space-y-6">
         <div className="flex flex-col items-center gap-4">
-          <Avatar className="h-24 w-24">
+          <Avatar className="h-24 w-24 border-2 border-border">
             <AvatarImage src={profilePhoto} alt="Profile" />
             <AvatarFallback>
               {firstName?.[0]?.toUpperCase()}

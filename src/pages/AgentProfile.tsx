@@ -240,14 +240,14 @@ export default function AgentProfile() {
         
         <div className="max-w-md mx-auto">
           <div className="flex flex-col items-center gap-4 py-6">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src={agent.profile_photo_url} />
+            <Avatar className="h-24 w-24 border-2 border-border">
+              <AvatarImage src={agent.profile_photo_url} className="object-cover" />
               <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
                 {agent.first_name[0]}{agent.last_name[0]}
               </AvatarFallback>
             </Avatar>
             <div className="text-center space-y-1">
-              <h2 className="text-xl font-heading font-semibold">{agent.first_name} {agent.last_name}</h2>
+              <h2 className="text-xl font-sans font-semibold">{agent.first_name} {agent.last_name}</h2>
               <p className="text-muted-foreground">Home Buyer</p>
               <p className="text-sm text-muted-foreground">{agent.city}</p>
               {agent.bio && <p className="text-sm mt-2 px-6">{agent.bio}</p>}
@@ -255,7 +255,7 @@ export default function AgentProfile() {
           </div>
 
           <div className="px-4 pb-6">
-            <h3 className="text-center font-heading font-semibold mb-4">
+            <h3 className="text-center font-sans font-semibold mb-4">
               Saved snapshots
             </h3>
             {savedPosts.length === 0 ? (
@@ -308,15 +308,15 @@ export default function AgentProfile() {
       <div className="max-w-md mx-auto">
         <div className="p-6 space-y-4">
           <div className="flex items-start gap-4">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src={agent.profile_photo_url} alt="Profile" />
+            <Avatar className="h-24 w-24 border-2 border-border">
+              <AvatarImage src={agent.profile_photo_url} alt="Profile" className="object-cover" />
               <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
                 {agent.first_name[0]}{agent.last_name[0]}
               </AvatarFallback>
             </Avatar>
 
             <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-heading font-semibold">
+              <h2 className="text-xl font-sans font-semibold">
                 {agent.first_name} {agent.last_name}
               </h2>
               <p className="text-muted-foreground text-sm">

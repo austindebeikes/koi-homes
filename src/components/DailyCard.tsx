@@ -9,6 +9,7 @@ interface DailyCardProps {
     caption: string;
     created_at: string;
     user_id: string;
+    photo_url: string;
     users: {
       id: string;
       first_name: string;
@@ -50,6 +51,19 @@ export function DailyCard({ daily }: DailyCardProps) {
           <p className="text-xs text-muted-foreground">{daily.users.city}</p>
         </div>
       </div>
+
+      {/* Video (if available) */}
+      {daily.photo_url && daily.photo_url.trim() !== '' && (
+        <div className="mb-4 rounded-lg overflow-hidden">
+          <video
+            src={daily.photo_url}
+            controls
+            muted
+            className="w-full rounded-lg"
+            style={{ maxHeight: '300px' }}
+          />
+        </div>
+      )}
 
       {/* Content */}
       <div className="mb-4">

@@ -103,7 +103,7 @@ export default function Meetings() {
                     className="cursor-pointer"
                     onClick={() => navigate(`/agent/${meeting.buyer_id}`)}
                   >
-                    <Avatar className="h-12 w-12">
+                    <Avatar className="h-12 w-12 border-2 border-border">
                       <AvatarImage src={meeting.buyer?.profile_photo_url} />
                       <AvatarFallback>
                         {meeting.buyer?.first_name[0]}

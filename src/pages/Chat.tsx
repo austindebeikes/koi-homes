@@ -140,15 +140,20 @@ export default function Chat() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={otherUser.profile_photo_url} alt={`${otherUser.first_name} ${otherUser.last_name}`} />
-            <AvatarFallback>{otherUser.first_name[0]}{otherUser.last_name[0]}</AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="font-semibold">{otherUser.first_name} {otherUser.last_name}</p>
-            <p className="text-sm text-muted-foreground">
-              {otherUser.role === 'Agent' ? 'Real Estate Agent' : 'Home Buyer'}
-            </p>
+          <div 
+            className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => navigate(otherUser.role === 'Agent' ? `/agent/${otherUser.id}` : `/agent/${otherUser.id}`)}
+          >
+            <Avatar className="h-10 w-10 border-2 border-border">
+              <AvatarImage src={otherUser.profile_photo_url} alt={`${otherUser.first_name} ${otherUser.last_name}`} className="object-cover" />
+              <AvatarFallback>{otherUser.first_name[0]}{otherUser.last_name[0]}</AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-semibold">{otherUser.first_name} {otherUser.last_name}</p>
+              <p className="text-sm text-muted-foreground">
+                {otherUser.role === 'Agent' ? 'Real Estate Agent' : 'Home Buyer'}
+              </p>
+            </div>
           </div>
         </div>
       </div>
