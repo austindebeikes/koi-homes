@@ -40,21 +40,21 @@ interface Post {
 }
 
 export default function Feed() {
-  const { user, profile } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'snapshots' | 'dailys'>('snapshots');
 
   useEffect(() => {
-    if (!user) {
+    if (!authLoading && !user) {
       navigate('/auth');
       return;
     }
     if (profile?.id) {
       loadPosts();
     }
-  }, [user, profile?.id, navigate]);
+  }, [user, profile?.id, navigate, authLoading]);
 
   const loadPosts = async () => {
     try {
@@ -119,7 +119,9 @@ export default function Feed() {
         };
       }));
 
-      setPosts(postsWithLikes);
+      // Shuffle posts for randomized feed
+      const shuffled = [...postsWithLikes].sort(() => Math.random() - 0.5);
+      setPosts(shuffled);
     } catch (error) {
       console.error('Error loading posts:', error);
     } finally {
