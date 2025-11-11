@@ -16,6 +16,7 @@ export default function NewPost() {
   const { profile, refreshProfile } = useAuth();
   const { toast } = useToast();
   const [imageUrl, setImageUrl] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
   const [caption, setCaption] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [postType, setPostType] = useState<'photo' | 'daily'>('photo');
@@ -96,6 +97,7 @@ export default function NewPost() {
           photo_url: postType === 'photo' ? imageUrl.trim() : '',
           caption: caption.trim(),
           is_daily: postType === 'daily',
+          daily_video_url: postType === 'daily' && videoUrl ? videoUrl.trim() : null,
         });
 
       if (error) throw error;
@@ -160,8 +162,8 @@ export default function NewPost() {
 
           {postType === 'daily' && (
             <ImageUpload
-              onUploadComplete={(url) => setImageUrl(url)}
-              currentImageUrl={imageUrl}
+              onUploadComplete={(url) => setVideoUrl(url)}
+              currentImageUrl={videoUrl}
               label="Daily Video (Optional)"
               bucketName="post-photos"
               acceptVideo={true}

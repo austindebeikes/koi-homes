@@ -10,6 +10,7 @@ interface DailyCardProps {
     created_at: string;
     user_id: string;
     photo_url: string;
+    daily_video_url?: string | null;
     users: {
       id: string;
       first_name: string;
@@ -53,10 +54,10 @@ export function DailyCard({ daily }: DailyCardProps) {
       </div>
 
       {/* Video (if available) */}
-      {daily.photo_url && daily.photo_url.trim() !== '' && (
+      {daily.daily_video_url && daily.daily_video_url.trim() !== '' && (
         <div className="mb-4 rounded-lg overflow-hidden">
           <video
-            src={daily.photo_url}
+            src={daily.daily_video_url}
             controls
             muted
             className="w-full rounded-lg"
