@@ -61,30 +61,6 @@ export default function NewPost() {
       return;
     }
 
-    // Check for existing daily in last 24 hours
-    if (postType === 'daily') {
-      const { data: existingDaily } = await supabase
-        .from('posts')
-        .select('id, created_at')
-        .eq('user_id', profile.id)
-        .eq('is_daily', true)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (existingDaily) {
-        const postAge = Date.now() - new Date(existingDaily.created_at).getTime();
-        const hoursSincePost = postAge / (1000 * 60 * 60);
-        if (hoursSincePost < 24) {
-          toast({
-            title: "Daily already posted",
-            description: "You've already posted your Daily. You can post another in 24 hours.",
-            variant: "destructive",
-          });
-          return;
-        }
-      }
-    }
 
     setIsSubmitting(true);
     
@@ -167,7 +143,7 @@ export default function NewPost() {
               label="Daily Video (Optional)"
               bucketName="post-photos"
               acceptVideo={true}
-              maxDuration={5}
+              maxDuration={10}
             />
           )}
 

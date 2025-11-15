@@ -34,7 +34,7 @@
     --input: 0 0% 95%;
     --ring: 16 92% 59%;
 
-    --like-active: 340 82% 62%; /* pink for liked */
+    --like-active: 5 65% 45%; /* dark red for liked */
 
     --radius: 0.75rem;
 
@@ -84,7 +84,7 @@
     --input: 0 0% 20%;
     --ring: 16 92% 59%;
 
-    --like-active: 340 82% 62%;
+    --like-active: 5 65% 45%;
 
     --sidebar-background: 0 0% 7%;
     --sidebar-foreground: 0 0% 96%;

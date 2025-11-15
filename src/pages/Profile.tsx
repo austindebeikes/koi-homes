@@ -123,13 +123,9 @@ export default function Profile() {
       return;
     }
     
-    // Only show if less than 24 hours old
+    // Show the latest daily
     if (data) {
-      const postAge = Date.now() - new Date(data.created_at).getTime();
-      const hoursSincePost = postAge / (1000 * 60 * 60);
-      if (hoursSincePost < 24) {
-        setDailyPost(data);
-      }
+      setDailyPost(data);
     }
   };
 
