@@ -264,11 +264,8 @@ export default function Feed() {
       // Snapshots: regular photos that are NOT Daily's
       return post.photo_url && post.photo_url.trim() !== '' && !post.is_daily;
     } else {
-      // Daily's: only show Daily's that are less than 24 hours old
-      if (!post.is_daily) return false;
-      const postAge = Date.now() - new Date(post.created_at).getTime();
-      const hoursSincePost = postAge / (1000 * 60 * 60);
-      return hoursSincePost < 24;
+      // Daily's: show all Daily's
+      return post.is_daily;
     }
   });
 
@@ -375,7 +372,7 @@ export default function Feed() {
                           e.stopPropagation();
                           handleLikeToggle(post.id, post.userLiked || false);
                         }}
-                        className={`gap-1.5 ${post.userLiked ? 'bg-[hsl(340_82%_62%)] hover:bg-[hsl(340_82%_62%)]/90 border-[hsl(340_82%_62%)]' : ''}`}
+                        className={`gap-1.5 ${post.userLiked ? 'bg-[hsl(5_65%_45%)] hover:bg-[hsl(5_65%_45%)]/90 border-[hsl(5_65%_45%)]' : ''}`}
                       >
                         <Heart className={`h-4 w-4 ${post.userLiked ? 'fill-white' : ''}`} />
                         <span>{post.likesCount || 0}</span>

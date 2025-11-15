@@ -320,7 +320,7 @@ export default function PostDetail() {
             variant={isLiked ? "default" : "outline"}
             size="sm"
             onClick={handleLikeToggle}
-            className={`gap-1.5 ${isLiked ? 'bg-[hsl(340_82%_62%)] hover:bg-[hsl(340_82%_62%)]/90 border-[hsl(340_82%_62%)]' : ''}`}
+            className={`gap-1.5 ${isLiked ? 'bg-[hsl(5_65%_45%)] hover:bg-[hsl(5_65%_45%)]/90 border-[hsl(5_65%_45%)]' : ''}`}
           >
             <Heart className={`h-4 w-4 ${isLiked ? "fill-white" : ""}`} />
             <span>{likeCount}</span>
