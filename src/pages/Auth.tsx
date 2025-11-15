@@ -92,8 +92,11 @@ export default function Auth() {
 
         if (profileError) throw profileError;
 
-        // Refresh profile in context so the app has the latest data
+        // Wait for profile to be loaded in context
         await refreshProfile?.();
+        
+        // Extra delay to ensure profile is fully propagated
+        await new Promise(resolve => setTimeout(resolve, 300));
       }
 
       navigate('/');

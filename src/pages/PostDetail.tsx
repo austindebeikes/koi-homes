@@ -120,19 +120,20 @@ export default function PostDetail() {
   const handleLikeToggle = async () => {
     if (!profile?.id || !post) return;
 
+    const currentlyLiked = isLiked;
+    
+    // Optimistic update - update UI immediately
+    setIsLiked(!currentlyLiked);
+    setLikeCount(prev => currentlyLiked ? Math.max(0, prev - 1) : prev + 1);
+
     try {
-      if (isLiked) {
-        // Unlike - delete the like
-        const { error } = await supabase
+      if (currentlyLiked) {
+        await supabase
           .from('post_likes')
           .delete()
           .eq('post_id', id)
           .eq('user_id', profile.id);
-
-        if (error) throw error;
-        setIsLiked(false);
       } else {
-        // Like - check first, then insert
         const { data: existingLike } = await supabase
           .from('post_likes')
           .select('id')
@@ -141,13 +142,10 @@ export default function PostDetail() {
           .maybeSingle();
 
         if (!existingLike) {
-          const { error } = await supabase
+          await supabase
             .from('post_likes')
             .insert({ post_id: id, user_id: profile.id });
-
-          if (error) throw error;
-          setIsLiked(true);
-
+          
           // Create notification for the post author
           if (post.user_id !== profile.id) {
             await supabase
@@ -163,15 +161,18 @@ export default function PostDetail() {
         }
       }
 
-      // Re-fetch like count to ensure accuracy
-      const { count } = await supabase
+      // Get accurate count from database
+      const { count: actualCount } = await supabase
         .from('post_likes')
         .select('*', { count: 'exact', head: true })
         .eq('post_id', id);
       
-      setLikeCount(count || 0);
-    } catch (error: any) {
+      setLikeCount(actualCount || 0);
+    } catch (error) {
       console.error('Error toggling like:', error);
+      // Revert on error
+      setIsLiked(currentlyLiked);
+      setLikeCount(prev => currentlyLiked ? prev + 1 : Math.max(0, prev - 1));
     }
   };
 

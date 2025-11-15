@@ -53,6 +53,9 @@ export default function Feed() {
     }
     if (profile?.id) {
       loadPosts();
+    } else if (!authLoading && user && !profile) {
+      // Auth is loaded, user exists, but profile isn't loaded yet - wait for it
+      setLoading(true);
     }
   }, [user, profile?.id, navigate, authLoading]);
 
@@ -132,16 +135,30 @@ export default function Feed() {
   const handleLikeToggle = async (postId: string, currentlyLiked: boolean) => {
     if (!profile?.id) return;
 
+    // Optimistic update - update UI immediately
+    const post = posts.find(p => p.id === postId);
+    const newLikedState = !currentlyLiked;
+    const optimisticLikeCount = (post?.likesCount || 0) + (newLikedState ? 1 : -1);
+    
+    setPosts(posts.map(p => {
+      if (p.id === postId) {
+        return {
+          ...p,
+          userLiked: newLikedState,
+          likesCount: optimisticLikeCount,
+        };
+      }
+      return p;
+    }));
+
     try {
       if (currentlyLiked) {
-        // Unlike - delete the like
         await supabase
           .from('post_likes')
           .delete()
           .eq('post_id', postId)
           .eq('user_id', profile.id);
       } else {
-        // Like - check first, then insert
         const { data: existingLike } = await supabase
           .from('post_likes')
           .select('id')
@@ -150,14 +167,11 @@ export default function Feed() {
           .maybeSingle();
 
         if (!existingLike) {
-          const { error: insertError } = await supabase
+          await supabase
             .from('post_likes')
             .insert({ post_id: postId, user_id: profile.id });
           
-          if (insertError) throw insertError;
-          
           // Create notification for the post author
-          const post = posts.find(p => p.id === postId);
           if (post && post.user_id !== profile.id) {
             await supabase
               .from('notifications')
@@ -172,25 +186,35 @@ export default function Feed() {
         }
       }
 
-      // Reload like count from database to be accurate
-      const { count: newLikeCount } = await supabase
+      // Get accurate count from database
+      const { count: actualCount } = await supabase
         .from('post_likes')
         .select('*', { count: 'exact', head: true })
         .eq('post_id', postId);
 
-      // Update local state
-      setPosts(posts.map(post => {
-        if (post.id === postId) {
+      // Update with actual count if different from optimistic
+      setPosts(posts.map(p => {
+        if (p.id === postId) {
           return {
-            ...post,
-            userLiked: !currentlyLiked,
-            likesCount: newLikeCount || 0,
+            ...p,
+            likesCount: actualCount || 0,
           };
         }
-        return post;
+        return p;
       }));
     } catch (error) {
       console.error('Error toggling like:', error);
+      // Revert on error
+      setPosts(posts.map(p => {
+        if (p.id === postId) {
+          return {
+            ...p,
+            userLiked: currentlyLiked,
+            likesCount: post?.likesCount || 0,
+          };
+        }
+        return p;
+      }));
     }
   };
 
