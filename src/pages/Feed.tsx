@@ -396,7 +396,7 @@ export default function Feed() {
                           e.stopPropagation();
                           handleLikeToggle(post.id, post.userLiked || false);
                         }}
-                        className={`gap-1.5 ${post.userLiked ? 'bg-[hsl(5_65%_45%)] hover:bg-[hsl(5_65%_45%)]/90 border-[hsl(5_65%_45%)] text-white' : ''}`}
+                        className={`gap-1.5 ${post.userLiked ? 'bg-[hsl(var(--like-active))] hover:bg-[hsl(var(--like-active))]/90 border-[hsl(var(--like-active))] text-white' : ''}`}
                       >
                         <Heart className={`h-4 w-4 ${post.userLiked ? 'fill-white' : ''}`} />
                         <span>{post.likesCount || 0}</span>

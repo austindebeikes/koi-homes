@@ -15,7 +15,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 11%;
 
-    --primary: 16 92% 59%; /* #F4743B koi orange */
+    --primary: 18 65% 45%; /* muted darker orange */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 40 60% 85%; /* #EEDDB6 light cream */
@@ -24,7 +24,7 @@
     --muted: 0 0% 96%;
     --muted-foreground: 0 0% 45%;
 
-    --accent: 16 92% 59%; /* same as primary */
+    --accent: 18 65% 45%; /* same as primary */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
@@ -32,9 +32,9 @@
 
     --border: 0 0% 90%;
     --input: 0 0% 95%;
-    --ring: 16 92% 59%;
+    --ring: 18 65% 45%;
 
-    --like-active: 5 65% 45%; /* dark red for liked */
+    --like-active: 340 50% 40%; /* dark pink for liked */
 
     --radius: 0.75rem;
 
@@ -65,7 +65,7 @@
     --popover: 0 0% 12%;
     --popover-foreground: 0 0% 95%;
 
-    --primary: 16 92% 59%;
+    --primary: 18 65% 45%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 18%;
@@ -74,7 +74,7 @@
     --muted: 0 0% 18%;
     --muted-foreground: 0 0% 65%;
 
-    --accent: 16 92% 59%;
+    --accent: 18 65% 45%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
@@ -82,9 +82,9 @@
 
     --border: 0 0% 20%;
     --input: 0 0% 20%;
-    --ring: 16 92% 59%;
+    --ring: 18 65% 45%;
 
-    --like-active: 5 65% 45%;
+    --like-active: 340 50% 40%;
 
     --sidebar-background: 0 0% 7%;
     --sidebar-foreground: 0 0% 96%;
