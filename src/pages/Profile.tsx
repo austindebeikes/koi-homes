@@ -34,7 +34,7 @@ export default function Profile() {
   const [followingCount, setFollowingCount] = useState(0);
   const [services, setServices] = useState<string[]>([]);
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
-  const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [pressTimer, setPressTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [followersOpen, setFollowersOpen] = useState(false);
   const [followingOpen, setFollowingOpen] = useState(false);
 
